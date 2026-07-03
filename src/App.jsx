@@ -114,11 +114,12 @@ const HANDBOOK = {
 /* ============================================================
    CLAUDE API HELPER
    ============================================================ */
-async function askClaude(systemFrame, userText, maxTokens = 350) {
-  // Calls the local Vite dev proxy (see vite.config.js), which forwards this
-  // to Anthropic's API and injects the API key server-side. See README.md.
+async function askClaude(systemFrame, userText, maxTokens = 350, attempt = 0) {
+  // Calls the Vercel Serverless Function at /api/coach.js, which holds the
+  // Anthropic API key server-side and forwards this request. Works the same
+  // way locally (via `vercel dev`) and in production. See README.md.
   try {
-    const res = await fetch("/api/anthropic/v1/messages", {
+    const res = await fetch("/api/coach", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -132,6 +133,16 @@ async function askClaude(systemFrame, userText, maxTokens = 350) {
         ],
       }),
     });
+    if (!res.ok) {
+      // Transient failures (rate limits, momentary server errors) get one automatic retry
+      // before we give up, so a single busy moment doesn't dead-end a student.
+      if ((res.status === 429 || res.status >= 500) && attempt < 1) {
+        await new Promise((r) => setTimeout(r, 1200));
+        return askClaude(systemFrame, userText, maxTokens, attempt + 1);
+      }
+      console.error(`Coaching request failed: HTTP ${res.status}`);
+      return "That took a moment too long — give the button another click.";
+    }
     const data = await res.json();
     const text = (data.content || [])
       .filter((b) => b.type === "text")
@@ -140,7 +151,8 @@ async function askClaude(systemFrame, userText, maxTokens = 350) {
       .trim();
     return text || "I couldn't quite process that — try rephrasing and asking again.";
   } catch (e) {
-    return "Coaching is temporarily unavailable — keep working, you can ask again in a moment.";
+    console.error("Coaching request failed:", e);
+    return "That didn't go through — give the button another click.";
   }
 }
 
@@ -405,7 +417,8 @@ function HandbookPanel({ termId, onClose, onOpen }) {
    ============================================================ */
 const STEPS = [
   { id: "entry", label: "Studio Entry", icon: Compass },
-  { id: "problem", label: "Problem Framing", icon: Target },
+  { id: "problemStatement", label: "Problem Statement", icon: Target },
+  { id: "problem", label: "Understanding the Problem", icon: MessageCircle },
   { id: "research", label: "Research", icon: Layers },
   { id: "patterns", label: "Patterns", icon: Sparkles },
   { id: "opportunity", label: "Opportunity", icon: Compass },
@@ -461,6 +474,7 @@ export default function App() {
     name: "",
     client: "",
     level: "sophomore",
+    problemStatement: "",
     clientAsk: "",
     whyAsking: "",
     whoAffected: "",
@@ -562,6 +576,7 @@ export default function App() {
     const lines = [
       `# ${p.name || "Untitled Project"}`,
       p.client ? `_Client: ${p.client}_\n` : "",
+      `## Problem Statement (initial)`, p.problemStatement || "_Not yet written_", "",
       `## Communication Problem`, p.priority || "_Not yet defined_", "",
       `## Research Process`, `${p.research.length} research observations collected across ${new Set(p.research.map(r=>r.tag)).size} categories.`, "",
       `## Patterns`, ...p.patterns.map((pt) => `- **${pt.note || "Untitled pattern"}**`), "",
@@ -613,7 +628,7 @@ export default function App() {
       `}</style>
 
       {step === "entry" ? (
-        <EntryScreen project={project} setProject={setProject} onStart={() => setStep("problem")} onLoad={() => fileInputRef.current?.click()} />
+        <EntryScreen project={project} setProject={setProject} onStart={() => setStep("problemStatement")} onLoad={() => fileInputRef.current?.click()} />
       ) : (
         <div className="flex">
           {/* Left rail */}
@@ -683,6 +698,7 @@ export default function App() {
               </div>
             )}
             <main className="print-area max-w-3xl mx-auto px-10 py-16">
+              {step === "problemStatement" && <ProblemStatementStep project={project} setProject={setProject} onNext={() => setStep("problem")} onOpen={openHandbook} />}
               {step === "problem" && <ProblemFraming project={project} setProject={setProject} onNext={() => setStep("research")} onOpen={openHandbook} />}
               {step === "research" && <ResearchCapture project={project} setProject={setProject} onNext={() => setStep("patterns")} onOpen={openHandbook} />}
               {step === "patterns" && <PatternRecognition project={project} setProject={setProject} onNext={() => setStep("opportunity")} onOpen={openHandbook} />}
@@ -801,17 +817,17 @@ function EntryScreen({ project, setProject, onStart, onLoad }) {
             <input
               value={project.name}
               onChange={(e) => setProject({ ...project, name: e.target.value })}
-              placeholder="e.g. Sunshine Bakery"
+              placeholder="e.g. Amaranth Bakery"
               className="w-full rounded-md px-3.5 py-2.5 outline-none"
               style={{ fontSize: "15px", background: T.paperRaised, border: `1px solid ${T.line}` }}
             />
           </div>
           <div>
-            <label className="block uppercase font-semibold mb-2" style={{ fontSize: "11px", letterSpacing: "0.1em", color: T.inkSoft }}>Brief</label>
+            <label className="block uppercase font-semibold mb-2" style={{ fontSize: "11px", letterSpacing: "0.1em", color: T.inkSoft }}>Client Brief</label>
             <textarea
               value={project.client}
               onChange={(e) => setProject({ ...project, client: e.target.value })}
-              placeholder="Describe the project…"
+              placeholder="Paste the client's project brief, assignment, RFP, or project request."
               rows={4}
               className="w-full rounded-md px-3.5 py-2.5 outline-none resize-none"
               style={{ fontSize: "15px", background: T.paperRaised, border: `1px solid ${T.line}` }}
@@ -835,11 +851,66 @@ function EntryScreen({ project, setProject, onStart, onLoad }) {
 }
 
 const MICRO_STEPS = [
-  { key: "clientAsk", q: "What is the client asking for?", ph: "In their own words — what did they literally ask you to make or fix?" },
-  { key: "whyAsking", q: "Why do you think they're asking for that?", ph: "What's actually driving the request?" },
-  { key: "whoAffected", q: "Who does this affect?", ph: "Who feels it if this goes right — or wrong?" },
+  { key: "clientAsk", q: "What outcome is the client hoping to achieve?", ph: "Not just what they asked for — what they're actually trying to get to." },
+  { key: "whyAsking", q: "What business or human challenge is driving this request?", ph: "What's actually underneath it?" },
+  { key: "whoAffected", q: "Who experiences this problem most directly?", ph: "The specific person or group feeling this, not \"everyone.\"" },
   { key: "whatIfNothing", q: "What happens if nothing changes?", ph: "What stays broken, or gets worse, without this project?" },
 ];
+
+function ProblemStatementStep({ project, setProject, onNext, onOpen }) {
+  const [coachNote, setCoachNote] = useState("");
+  const [coachLoading, setCoachLoading] = useState(false);
+  const [reacted, setReacted] = useState(!!project.problemStatement.trim());
+
+  const submit = async () => {
+    if (!project.problemStatement.trim()) return;
+    if (reacted) { onNext(); return; }
+    setCoachLoading(true);
+    const r = await askClaude(
+      `${getCoachPersona(project.level)}\nThe student just wrote a one-sentence problem statement, before any research — this is their first hypothesis, not a final answer. Client brief: "${project.client || "unspecified"}". React the way a strategist would to a first take: if it just restates the client's request rather than interpreting it, ask a question that would help them notice that themselves. If it already reads like real interpretation, say so briefly and note what you'll be testing it against as they research.`,
+      project.problemStatement
+    );
+    setCoachNote(r);
+    setCoachLoading(false);
+    setReacted(true);
+  };
+
+  return (
+    <div>
+      <SectionHeader
+        eyebrow="01"
+        title="Problem Statement"
+        sub="A good strategy isn't a collection of answers. It's a shared understanding of the problem."
+      />
+      <div className="mb-1.5 font-medium" style={{ fontSize: "18px", color: T.ink, fontFamily: "Instrument Serif" }}>
+        In one sentence, what is the real problem we're trying to solve?
+      </div>
+      <textarea
+        value={project.problemStatement}
+        onChange={(e) => { setProject({ ...project, problemStatement: e.target.value }); setReacted(false); setCoachNote(""); }}
+        rows={3}
+        placeholder="The real problem isn't ________. It's ________."
+        className="w-full rounded-md px-4 py-3 outline-none resize-none"
+        style={{ fontSize: "15px", background: T.paperRaised, border: `1px solid ${T.line}` }}
+        autoFocus
+      />
+      {coachNote && (
+        <div className="mt-5 pl-5 pr-4 py-3 rounded-lg fade-in" style={{ background: T.lavender }}>
+          <div className="uppercase font-semibold mb-1.5" style={{ fontSize: "11px", letterSpacing: "0.1em", color: T.signal }}>Your professor, leaning in</div>
+          <p className="italic leading-relaxed" style={{ fontSize: "16px", color: T.ink, fontFamily: "Instrument Serif" }}>{coachNote}</p>
+        </div>
+      )}
+      <button
+        onClick={submit}
+        disabled={!project.problemStatement.trim() || coachLoading}
+        className="mt-4 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-md font-semibold disabled:opacity-30"
+        style={{ fontSize: "14px", background: T.ink, color: "#fff" }}
+      >
+        {coachLoading ? "…" : reacted ? "Continue" : "Get a reaction, then continue"} {!coachLoading && <ArrowRight size={15} />}
+      </button>
+    </div>
+  );
+}
 
 function ProblemFraming({ project, setProject, onNext, onOpen }) {
   const startStage = project.priority.trim() ? "knowns" : (project.whatIfNothing || "").trim() ? "synthesis" : 0;
@@ -852,7 +923,13 @@ function ProblemFraming({ project, setProject, onNext, onOpen }) {
 
   const submitMicro = async (step) => {
     if (!draft.trim()) return;
-    setProject({ ...project, [step.key]: draft });
+    const idx = MICRO_STEPS.indexOf(step);
+    const reachingSynthesis = idx + 1 >= MICRO_STEPS.length;
+    setProject({
+      ...project,
+      [step.key]: draft,
+      ...(reachingSynthesis && !project.priority.trim() ? { priority: project.problemStatement } : {}),
+    });
     setReacting(true);
     const r = await askClaude(
       `${getCoachPersona(project.level)}\nThis is a small warm-up question in a desk-critique-style sequence leading toward the real strategic question, not the hard question itself. The student just answered "${step.q}" with their response below. React in ONE short sentence — a quick, human acknowledgment or a light nudge — then stop. Do not ask more than one follow-up. Keep it brief, this is a quick beat, not a full critique.`,
@@ -862,7 +939,6 @@ function ProblemFraming({ project, setProject, onNext, onOpen }) {
     setTranscript((t) => [...t, { q: step.q, a: draft, r }]);
     setDraft("");
     setReacting(false);
-    const idx = MICRO_STEPS.indexOf(step);
     setStage(idx + 1 < MICRO_STEPS.length ? idx + 1 : "synthesis");
   };
 
@@ -882,10 +958,17 @@ function ProblemFraming({ project, setProject, onNext, onOpen }) {
   return (
     <div>
       <SectionHeader
-        eyebrow="01"
-        title="What problem are we trying to solve?"
-        sub="This becomes the foundation for every decision you'll make next."
+        eyebrow="02"
+        title="Let's understand it more deeply"
+        sub="A few questions before we test that first instinct against something real."
       />
+
+      {project.problemStatement && transcript.length === 0 && typeof stage === "number" && (
+        <div className="rounded-lg px-4 py-3 mb-7" style={{ background: T.paper, border: `1px solid ${T.line}` }}>
+          <div className="uppercase font-semibold mb-1" style={{ fontSize: "10.5px", letterSpacing: "0.08em", color: T.inkSoft }}>Your first take</div>
+          <p className="italic" style={{ fontSize: "14.5px", color: T.inkSoft, fontFamily: "Instrument Serif" }}>{project.problemStatement}</p>
+        </div>
+      )}
 
       {transcript.length > 0 && (
         <div className="space-y-5 mb-8">
@@ -924,7 +1007,7 @@ function ProblemFraming({ project, setProject, onNext, onOpen }) {
 
       {stage === "synthesis" && (
         <>
-          <div className="mb-2 font-medium" style={{ fontSize: "22px", color: T.ink, fontFamily: "Instrument Serif" }}>So — what problem are we really trying to solve?</div>
+          <div className="mb-2 font-medium" style={{ fontSize: "22px", color: T.ink, fontFamily: "Instrument Serif" }}>Now — does your first take still hold, or has it shifted?</div>
           <textarea
             value={project.priority}
             onChange={(e) => setProject({ ...project, priority: e.target.value })}
@@ -1013,7 +1096,7 @@ function ResearchCapture({ project, setProject, onNext, onOpen }) {
   return (
     <div>
       <SectionHeader
-        eyebrow="02"
+        eyebrow="03"
         title="Get to know the problem"
         sub="A few quick questions — nothing to prepare, just tell me what you already know or notice."
       />
@@ -1111,7 +1194,7 @@ function PatternRecognition({ project, setProject, onNext, onOpen }) {
   return (
     <div>
       <SectionHeader
-        eyebrow="03"
+        eyebrow="04"
         title="What does it add up to?"
         sub="A pattern isn't a summary — it's what a few things you noticed actually mean when you look at them together."
       />
@@ -1211,7 +1294,7 @@ function OpportunityStep({ project, setProject, onNext, onOpen, onRequestReopen 
 
   return (
     <div>
-      <SectionHeader eyebrow="04 — First lock" title="Name the opportunity" sub={<>What gap or tension surfaced in your research? Ground it in the <Term id="insight" onOpen={onOpen}>insight</Term> behind your patterns, then link the evidence.</>} />
+      <SectionHeader eyebrow="05 — First lock" title="Name the opportunity" sub={<>What gap or tension surfaced in your research? Ground it in the <Term id="insight" onOpen={onOpen}>insight</Term> behind your patterns, then link the evidence.</>} />
 
       <div className="mb-4">
         <div className="font-medium mb-2" style={{ fontSize: "13px", color: T.inkSoft }}>Link supporting patterns</div>
@@ -1326,7 +1409,7 @@ function PositioningStep({ project, setProject, onNext, onOpen, onRequestReopen,
   return (
     <div>
       {project.flags?.positioning && <FlagBanner onResolve={() => onResolveFlag("positioning")} />}
-      <SectionHeader eyebrow="05 — The spine" title="Write your positioning" sub={<>A few questions first, then we'll assemble it into one sentence: audience, market, promise, and <Term id="positioning" onOpen={onOpen}>reason to believe</Term>.</>} />
+      <SectionHeader eyebrow="06 — The spine" title="Write your positioning" sub={<>A few questions first, then we'll assemble it into one sentence: audience, market, promise, and <Term id="positioning" onOpen={onOpen}>reason to believe</Term>.</>} />
 
       {transcript.length > 0 && (
         <div className="space-y-5 mb-8">
@@ -1458,7 +1541,7 @@ function DifferentiatorsStep({ project, setProject, onNext, onOpen, onResolveFla
   return (
     <div>
       {project.flags?.differentiators && <FlagBanner onResolve={() => onResolveFlag("differentiators")} />}
-      <SectionHeader eyebrow="06" title="What makes this different?" sub="You already told me what sets this apart — let's turn that into a few clear, specific statements." />
+      <SectionHeader eyebrow="07" title="What makes this different?" sub="You already told me what sets this apart — let's turn that into a few clear, specific statements." />
 
       {!evalStage ? (
         <button onClick={generate} disabled={loading} className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-md font-semibold disabled:opacity-60" style={{ fontSize: "14px", background: T.ink, color: "#fff" }}>
@@ -1530,7 +1613,7 @@ function AttributesStep({ project, setProject, onNext, onOpen, onResolveFlag }) 
   return (
     <div>
       {project.flags?.attributes && <FlagBanner onResolve={() => onResolveFlag("attributes")} />}
-      <SectionHeader eyebrow="07" title="This, not that" sub="A few honest contrasts — what this brand truly is, and the tempting opposite it deliberately isn't." />
+      <SectionHeader eyebrow="08" title="This, not that" sub="A few honest contrasts — what this brand truly is, and the tempting opposite it deliberately isn't." />
 
       {!evalStage ? (
         <>
@@ -1611,7 +1694,7 @@ function PillarsStep({ project, setProject, onNext, onOpen, onResolveFlag }) {
   return (
     <div>
       {project.flags?.pillars && <FlagBanner onResolve={() => onResolveFlag("pillars")} />}
-      <SectionHeader eyebrow="08" title="Pillars" sub="A few small strategic ideas, derived from your positioning — not brainstormed fresh." />
+      <SectionHeader eyebrow="09" title="Pillars" sub="A few small strategic ideas, derived from your positioning — not brainstormed fresh." />
 
       {!evalStage ? (
         <>
@@ -1700,7 +1783,7 @@ function PhilosophyStep({ project, setProject, onNext, onOpen, onResolveFlag }) 
   return (
     <div>
       {project.flags?.philosophy && <FlagBanner onResolve={() => onResolveFlag("philosophy")} />}
-      <SectionHeader eyebrow="09" title="What, how, and why" sub="You've already said enough for this — let's put it together." />
+      <SectionHeader eyebrow="10" title="What, how, and why" sub="You've already said enough for this — let's put it together." />
 
       {!evalStage ? (
         <button onClick={generate} disabled={loading} className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-md font-semibold disabled:opacity-60" style={{ fontSize: "14px", background: T.ink, color: "#fff" }}>
@@ -1765,7 +1848,7 @@ function VoiceStep({ project, setProject, onNext, onOpen, onResolveFlag }) {
   return (
     <div>
       {project.flags?.voice && <FlagBanner onResolve={() => onResolveFlag("voice")} />}
-      <SectionHeader eyebrow="10" title="How does it sound?" sub="If this brand spoke out loud, what would it actually sound like?" />
+      <SectionHeader eyebrow="11" title="How does it sound?" sub="If this brand spoke out loud, what would it actually sound like?" />
 
       <div className="mb-1.5 font-medium" style={{ fontSize: "18px", color: T.ink, fontFamily: "Instrument Serif" }}>Casual or formal? Playful or serious? Describe how it talks.</div>
       <textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={2} placeholder="Describe it like you'd describe a person's way of talking."
@@ -1808,7 +1891,7 @@ function PersonaStep({ project, setProject, onNext, onOpen, onResolveFlag }) {
   return (
     <div>
       {project.flags?.persona && <FlagBanner onResolve={() => onResolveFlag("persona")} />}
-      <SectionHeader eyebrow="11" title="If it were a person" sub="A quick way to make an abstract brand feel like something real and consistent." />
+      <SectionHeader eyebrow="12" title="If it were a person" sub="A quick way to make an abstract brand feel like something real and consistent." />
 
       {stage === 0 && (
         <>
@@ -1914,7 +1997,7 @@ function VisualStep({ project, setProject, onNext, onOpen, onResolveFlag }) {
   return (
     <div>
       {project.flags?.visual && <FlagBanner onResolve={() => onResolveFlag("visual")} />}
-      <SectionHeader eyebrow="12" title="Connect strategy to visual direction" sub="One category at a time. Visual choices aren't personal preferences here — they're communication decisions." />
+      <SectionHeader eyebrow="13" title="Connect strategy to visual direction" sub="One category at a time. Visual choices aren't personal preferences here — they're communication decisions." />
 
       {project.visual.length > 0 && (
         <div className="space-y-2 mb-7">
@@ -2053,7 +2136,7 @@ function SynthesisStep({ project, setProject, onNext, onOpen, onResolveFlag }) {
   return (
     <div>
       {project.flags?.synthesis && <FlagBanner onResolve={() => onResolveFlag("synthesis")} />}
-      <SectionHeader eyebrow="13" title="Bring it together" sub="A good presentation isn't a sequence of slides. It's a story of thinking — what you learned, what it meant, what you decided, how the design responds." />
+      <SectionHeader eyebrow="14" title="Bring it together" sub="A good presentation isn't a sequence of slides. It's a story of thinking — what you learned, what it meant, what you decided, how the design responds." />
 
       {transcript.length > 0 && stage !== "map" && stage !== "refine" && (
         <div className="space-y-5 mb-8">
@@ -2191,7 +2274,7 @@ Visual direction: ${project.visual.map((v) => `${v.category}: ${v.choice} (${v.j
   if (!role) {
     return (
       <div>
-        <SectionHeader eyebrow="14" title="Presentation Review" sub="Choose who's reviewing. Present your work section by section — they'll respond as you go." />
+        <SectionHeader eyebrow="15" title="Presentation Review" sub="Choose who's reviewing. Present your work section by section — they'll respond as you go." />
         <div className="grid grid-cols-2 gap-3">
           {ROLES.map((r) => (
             <button key={r.id} onClick={() => { setRole(r.id); setMessages([{ from: "reviewer", text: `I'm ready when you are. Walk me through your project — start wherever makes sense to you.` }]); }}

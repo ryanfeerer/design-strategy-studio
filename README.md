@@ -1,55 +1,70 @@
 # Design Strategy Studio
 
-A standalone Vite + React project for running the app locally, outside of Claude.ai.
+A standalone Vite + React project, deployed as a static site with one small Vercel Serverless Function for AI coaching.
 
-## Setup
+## Why there's a `/api` folder at all
+
+Anthropic's API can't be called directly from a browser (no CORS support for browser origins), and an API key should never live in client-side code anyway. Something has to sit between the browser and Anthropic, holding the key. `api/coach.js` is that thing — a single Vercel Serverless Function. Vercel automatically turns any file in `/api` into a live endpoint at deploy time; there's no server to run or manage yourself.
+
+## Local development
 
 ```bash
 npm install
 cp .env.example .env
 ```
 
-Open `.env` and add your own Anthropic API key (get one at https://console.anthropic.com/settings/keys):
+Add your Anthropic API key to `.env` (get one at https://console.anthropic.com/settings/keys):
 
 ```
 ANTHROPIC_API_KEY=sk-ant-your-key-here
 ```
 
-Then run it:
+Then run:
 
 ```bash
 npm run dev
 ```
 
-Open the URL it prints (usually `http://localhost:5173`).
+This runs `vercel dev`, not `vite dev` directly — that matters. `vercel dev` runs your Vite frontend **and** the `/api/coach.js` function together, locally, exactly matching how they'll run in production. (First run may ask you to log in / link the project to Vercel — that's normal and only needed once.)
 
-## About the AI coaching calls — read this before you're confused why it doesn't work
+## Deploying
 
-Inside Claude.ai, this app's coaching calls (`askClaude` in `App.jsx`) went straight to `https://api.anthropic.com` with no API key visible in the code — that's because Claude.ai's artifact sandbox authenticates and proxies those calls for you invisibly. Outside that sandbox, none of that exists, and two real problems show up:
+```bash
+vercel deploy
+```
 
-1. **Anthropic's API doesn't allow direct browser calls.** There's no CORS support for calling it straight from client-side JavaScript, regardless of whether you have a key.
-2. **You should never put an API key in client-side code anyway** — anyone who opens dev tools could read it out of the bundle and run up charges on your account.
+or connect the repo in the Vercel dashboard for automatic deploys on push — either way, Vercel builds the static frontend and deploys `api/coach.js` as a function automatically, no extra configuration needed.
 
-So this project includes a small **dev-only proxy**, configured in `vite.config.js`. The app calls a relative path (`/api/anthropic/v1/messages`); Vite's dev server catches that, forwards it to Anthropic, and injects your API key from `.env` along the way. Your key lives only in `.env` (which is git-ignored) and in the Vite process — it's never sent to the browser.
+**Before your first deploy, set the API key in Vercel itself** — `.env` is git-ignored and never gets deployed:
 
-**This proxy only exists while `npm run dev` is running.** If you run `npm run build` to create a production build, there's no server behind that build to do this forwarding — the coaching calls will fail with the same CORS problem, because there's nothing listening at `/api/anthropic` anymore. To actually deploy this somewhere, you'd need a real backend (a small Express/Node server, a serverless function, a Cloudflare Worker, etc.) that does the same job the dev proxy is doing now — hold the API key server-side, accept a request from the frontend, forward it to Anthropic, return the response. That's genuinely a separate, small piece of infrastructure work, not something `npm run build` gives you for free.
+```bash
+vercel env add ANTHROPIC_API_KEY
+```
+
+or add it in the dashboard under Project Settings → Environment Variables. Do this for both Production and Preview environments if you want coaching to work on preview deploys too.
+
+## If coaching ever stops working again
+
+- **Check the function's logs** in the Vercel dashboard (Deployments → your deployment → Functions → `api/coach`). `coach.js` logs a clear error if `ANTHROPIC_API_KEY` is missing, rather than failing silently.
+- **Rate limits:** the app automatically retries once on a 429 or 5xx response before giving up, so one busy moment shouldn't dead-end a student — but sustained 429s under real classroom load mean your Anthropic account needs a higher rate limit, not a code fix.
+- If you ever see the old "coaching is temporarily unavailable" message coming back after a deploy, the first thing to check is whether `api/coach.js` is still present and whether the environment variable is still set on that specific Vercel environment (Production vs. Preview vars are separate).
 
 ## Project structure
 
 ```
-├── index.html            entry HTML
-├── vite.config.js        dev server + the Anthropic proxy described above
+├── index.html
+├── api/
+│   └── coach.js         the only server-side code — proxies coaching requests to Anthropic
+├── vite.config.js        plain Vite config, no proxy (see "why" above)
 ├── tailwind.config.js
 ├── postcss.config.js
-├── .env.example          copy to .env and add your key
+├── .env.example           copy to .env for local dev; set the real value in Vercel for production
 └── src/
     ├── main.jsx           React entry point
     ├── index.css          Tailwind directives
-    └── App.jsx            the entire application (this is what you've been editing in Claude.ai)
+    └── App.jsx             the entire application
 ```
-
-Everything the app does — all the screens, the strategy wall, the handbook, exports, save/load — lives in the single `src/App.jsx` file, same as it did as a Claude.ai artifact. Nothing about the app's structure changed; this is just the scaffolding needed to run that same file outside Claude.ai.
 
 ## Local save/load and exports
 
-These work exactly as they did in Claude.ai — project save/load is a JSON file download/upload, and exports are Markdown downloads and browser print-to-PDF. None of that depends on the API proxy, so it'll work even if you skip the API key setup entirely — only the live AI coaching responses require it.
+These don't touch the server at all — project save/load is a JSON file download/upload, and exports are Markdown downloads and browser print-to-PDF. Only live AI coaching needs `api/coach.js` and the API key.
