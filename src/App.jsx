@@ -3,14 +3,14 @@ import {
   Lock, X, Sparkles, Download, Upload, FileDown, Plus, Pin, RotateCcw, Check,
   AlertCircle, MessageCircle, BookOpen, Users, Layers, Target, Compass, Palette,
   Presentation as PresentationIcon, FileText, ArrowRight, Save,
-  Fingerprint, ToggleLeft, Lightbulb, Volume2, UserCircle2,
+  Fingerprint, ToggleLeft, Lightbulb, Volume2, UserCircle2, ClipboardCheck,
 } from "lucide-react";
 
 /* ============================================================
-   DESIGN TOKENS  (unchanged — visual language preserved)
+   DESIGN TOKENS  (unchanged, visual language preserved)
    ============================================================ */
 const FONT_IMPORT = `
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,500&family=IBM+Plex+Mono:ital@0;1&display=swap');
 `;
 
 const T = {
@@ -28,12 +28,12 @@ const T = {
 };
 
 /* ============================================================
-   STRATEGY HANDBOOK  (static reference — unchanged)
+   STRATEGY HANDBOOK  (static reference, unchanged in substance)
    ============================================================ */
 const HANDBOOK = {
   observation: {
     title: "Observation",
-    def: "A single, specific thing you noticed or found — sourced, not invented.",
+    def: "A single, specific thing you noticed or found, sourced rather than invented.",
     matters: "Observations are the raw material of strategy. Weak strategy almost always traces back to thin or generic observation.",
     pro: "Professionals log observations separately from what they think those observations mean.",
     example: "Branding: \"Three of five reviews mention the wait being 'worth it.'\" UX: \"Users tap back after the confirmation screen 40% of the time.\"",
@@ -44,7 +44,7 @@ const HANDBOOK = {
   },
   pattern: {
     title: "Pattern",
-    def: "A named interpretation of why several observations belong together — a claim, not a category.",
+    def: "A named interpretation of why several observations belong together. A claim, not a category.",
     matters: "This is where raw research turns into thinking.",
     pro: "Strategists cluster loosely at first, then tighten a pattern name until it survives being said aloud.",
     example: "Branding: \"Customers treat this bakery as a weekend ritual, not an errand.\"",
@@ -55,10 +55,10 @@ const HANDBOOK = {
   },
   insight: {
     title: "Key Insight",
-    def: "The one discovery that changes how you think about the project — not another observation.",
-    matters: "An insight explains, an observation only describes.",
-    pro: "A real insight is usually the highest-leverage sentence in the whole strategy.",
-    example: "A bakery finds customers aren't buying bread — they're buying a reason to slow down.",
+    def: "The one discovery that changes how you think about the project, not another observation.",
+    matters: "An insight explains. An observation only describes.",
+    pro: "A real insight is usually the highest leverage sentence in the whole strategy.",
+    example: "A bakery finds customers aren't buying bread. They're buying a reason to slow down.",
     misconception: "\"Our audience is busy\" is an observation. What it reveals about them is the insight.",
     related: ["Pattern", "Opportunity"],
     stage: "This becomes the reason your opportunity exists.",
@@ -68,9 +68,9 @@ const HANDBOOK = {
     title: "Opportunity",
     def: "A gap or tension your research surfaced that the strategy is positioned to address.",
     matters: "A good opportunity is traceable to something you found, not something you wished were true.",
-    pro: "Professionals pressure-test an opportunity by asking who would disagree with it.",
+    pro: "Professionals pressure test an opportunity by asking who would disagree with it.",
     example: "A gap between how a brand sees itself and how loyal customers describe it.",
-    misconception: "An opportunity isn't a wish list item — it's a claim your research supports.",
+    misconception: "An opportunity isn't a wish list item. It's a claim your research supports.",
     related: ["Insight", "Positioning"],
     stage: "This is where research becomes strategy.",
     ask: "Which research most influenced this? What would change my mind?",
@@ -79,9 +79,9 @@ const HANDBOOK = {
     title: "Positioning",
     def: "A single sentence stating the audience, market, promise, and reason to believe.",
     matters: "Everything after this sentence unpacks it. If it's vague, everything built on it inherits that vagueness.",
-    pro: "Swap in a competitor's name — if the sentence still reads true, it isn't sharp enough.",
+    pro: "Swap in a competitor's name. If the sentence still reads true, it isn't sharp enough.",
     example: "An identity system built around one competitive claim.",
-    misconception: "Positioning is not messaging — mission is a philosophy, positioning is a market bet.",
+    misconception: "Positioning is not messaging. Mission is a philosophy, positioning is a market bet.",
     related: ["Opportunity", "Pillar"],
     stage: "This becomes the spine of the whole strategy.",
     ask: "Could a direct competitor say this exact sentence?",
@@ -90,18 +90,18 @@ const HANDBOOK = {
     title: "Strategic Pillar",
     def: "A small number of derived, usable ideas that unpack the positioning into something a team can act on.",
     matters: "Pillars translate one sentence into working tools without losing the thread back to it.",
-    pro: "Test pillars for real tradeoffs — a pillar's opposite should be something a competitor could plausibly choose.",
+    pro: "Test pillars for real tradeoffs. A pillar's opposite should be something a competitor could plausibly choose.",
     example: "\"Unhurried, not slow\" as a lived brand pillar.",
-    misconception: "A pillar with no visible connection to positioning is just a nice-sounding value.",
+    misconception: "A pillar with no visible connection to positioning is just a nice sounding value.",
     related: ["Positioning", "Voice & Tone"],
     stage: "Each pillar should trace back to your positioning.",
     ask: "Which part of my positioning does this actually come from?",
   },
   evidence: {
     title: "Evidence",
-    def: "Anything a claim can be traced back to — a sourced observation, a pattern, a prior decision.",
+    def: "Anything a claim can be traced back to: a sourced observation, a pattern, a prior decision.",
     matters: "Evidence is what separates a strategic decision from an opinion stated with confidence.",
-    pro: "Professional strategists keep receipts — not for bureaucracy, but for the moment a client pushes back.",
+    pro: "Professional strategists keep receipts, not for bureaucracy, but for the moment a client pushes back.",
     example: "Citing which research shaped a positioning choice.",
     misconception: "A strong opinion, repeated confidently, is not evidence.",
     related: ["Observation", "Pattern"],
@@ -136,6 +136,58 @@ function Chip({ children, tone = "neutral" }) {
       style={{ fontSize: "11px", background: c.bg, color: c.fg, border: `1px solid ${c.border}`, fontFamily: "Instrument Sans", fontWeight: 500 }}>
       {children}
     </span>
+  );
+}
+
+/* Educational Blurb: three sentences of teaching, before any question. */
+function Blurb({ children }) {
+  return (
+    <p className="mb-6" style={{ fontSize: "16.5px", lineHeight: "1.65", color: T.ink, maxWidth: "34rem", fontFamily: "Instrument Sans" }}>
+      {children}
+    </p>
+  );
+}
+
+/* Studio Note: one sentence, monospace, italic, underlined in the accent color.
+   A margin annotation, not a callout. No box, no icon. */
+function StudioNote({ children }) {
+  return (
+    <p
+      className="italic underline underline-offset-4 mb-2"
+      style={{
+        fontFamily: "IBM Plex Mono, monospace",
+        fontSize: "12.5px",
+        color: T.inkSoft,
+        opacity: 0.85,
+        textDecorationColor: T.rule,
+        textDecorationThickness: "1px",
+        maxWidth: "28rem",
+      }}
+    >
+      {children}
+    </p>
+  );
+}
+
+function SectionHeader({ eyebrow, title, blurb, note }) {
+  return (
+    <div className="mb-12 pb-9" style={{ borderBottom: `1.5px solid ${T.rule}` }}>
+      <div className="uppercase font-semibold mb-5" style={{ fontSize: "11px", letterSpacing: "0.16em", color: T.inkSoft, fontFamily: "Instrument Sans" }}>{eyebrow}</div>
+      <h1 className="mb-6" style={{ fontSize: "44px", lineHeight: "1.02", fontFamily: "Instrument Serif", letterSpacing: "-0.02em", color: T.ink }}>{title}</h1>
+      {blurb && <Blurb>{blurb}</Blurb>}
+      {note && <StudioNote>{note}</StudioNote>}
+    </div>
+  );
+}
+
+
+function NextButton({ onClick, disabled, children = "Continue" }) {
+  return (
+    <button onClick={onClick} disabled={disabled}
+      className="mt-8 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-md font-semibold disabled:opacity-30"
+      style={{ fontSize: "14px", background: T.ink, color: T.paperRaised, fontFamily: "Instrument Sans" }}>
+      {children} <ArrowRight size={15} />
+    </button>
   );
 }
 
@@ -208,10 +260,10 @@ function RippleModal({ nodeId, downstream, onConfirm, onClose }) {
             ))}
           </ul>
         ) : (
-          <p className="mb-4" style={{ fontSize: "14px", color: T.inkSoft }}>Nothing downstream is locked yet — nothing to flag.</p>
+          <p className="mb-4" style={{ fontSize: "14px", color: T.inkSoft }}>Nothing downstream is locked yet, so nothing will be flagged.</p>
         )}
         <p className="leading-relaxed mb-6" style={{ fontSize: "13.5px", color: T.inkSoft }}>
-          Nothing changes automatically. Reopening is always allowed — the cost is visibility, not penalty.
+          Nothing changes automatically. Reopening is always allowed. The cost is visibility, not penalty.
         </p>
         <div className="flex justify-end gap-2">
           <button onClick={onClose} className="px-4 py-2 rounded-md" style={{ fontSize: "13px", color: T.inkSoft, fontFamily: "Instrument Sans" }}>Cancel</button>
@@ -284,30 +336,44 @@ function HandbookPanel({ termId, onClose, onOpen }) {
 }
 
 /* ============================================================
-   STEP DEFINITIONS
+   STEP DEFINITIONS, grouped into phases for navigation only.
+   Phases are organizational labels, not additional screens.
    ============================================================ */
 const STEPS = [
-  { id: "entry", label: "Studio Entry", icon: Compass },
-  { id: "challenge", label: "The Challenge", icon: Target },
-  { id: "research", label: "Discover", icon: Layers },
-  { id: "patterns", label: "Patterns", icon: Sparkles },
-  { id: "keyInsight", label: "Key Insight", icon: Lightbulb },
-  { id: "audience", label: "Audience", icon: Users },
-  { id: "opportunity", label: "Opportunity", icon: Compass },
-  { id: "positioning", label: "Positioning", icon: Pin },
-  { id: "differentiators", label: "Differentiators", icon: Fingerprint },
-  { id: "attributes", label: "Brand Attributes", icon: ToggleLeft },
-  { id: "pillars", label: "Brand Pillars", icon: BookOpen },
-  { id: "philosophy", label: "Brand Philosophy", icon: MessageCircle },
-  { id: "voice", label: "Voice & Tone", icon: Volume2 },
-  { id: "persona", label: "Brand Persona", icon: UserCircle2 },
-  { id: "creative", label: "Creative Direction", icon: Palette },
-  { id: "summary", label: "Executive Summary", icon: FileText },
-  { id: "critique", label: "Critique Prep", icon: PresentationIcon },
-  { id: "brandStrategy", label: "Brand Strategy", icon: Check },
+  { id: "entry", label: "Studio Entry", icon: Compass, phase: null },
+  { id: "clientBrief", label: "Client Brief", icon: Target, phase: "Understand" },
+  { id: "challenge", label: "Communication Problem", icon: MessageCircle, phase: "Understand" },
+  { id: "research", label: "Research", icon: Layers, phase: "Discover" },
+  { id: "patterns", label: "Patterns", icon: Sparkles, phase: "Discover" },
+  { id: "keyInsight", label: "Key Insight", icon: Lightbulb, phase: "Discover" },
+  { id: "audience", label: "Audience", icon: Users, phase: "Discover" },
+  { id: "opportunity", label: "Opportunity", icon: Compass, phase: "Define" },
+  { id: "positioning", label: "Positioning", icon: Pin, phase: "Define" },
+  { id: "differentiators", label: "Differentiators", icon: Fingerprint, phase: "Define" },
+  { id: "attributes", label: "Brand Attributes", icon: ToggleLeft, phase: "Define" },
+  { id: "pillars", label: "Brand Pillars", icon: BookOpen, phase: "Define" },
+  { id: "philosophy", label: "Brand Philosophy", icon: MessageCircle, phase: "Define" },
+  { id: "voice", label: "Voice & Tone", icon: Volume2, phase: "Express" },
+  { id: "persona", label: "Brand Persona", icon: UserCircle2, phase: "Express" },
+  { id: "creative", label: "Creative Direction", icon: Palette, phase: "Express" },
+  { id: "summary", label: "Tell the Story", icon: FileText, phase: "Deliver" },
+  { id: "critique", label: "Critique Prep", icon: PresentationIcon, phase: "Deliver" },
+  { id: "finalReview", label: "Final Review", icon: ClipboardCheck, phase: "Deliver" },
+  { id: "brandStrategy", label: "Brand Strategy", icon: Check, phase: "Deliver" },
 ];
 
 const STEP_LABEL = Object.fromEntries(STEPS.map((s) => [s.id, s.label]));
+
+/* The workbook teaches. The export documents. A few terms differ between
+   the two on purpose, per the workbook/export convention. */
+const EXPORT_LABEL = {
+  research: "Discovery",
+  patterns: "Key Patterns",
+  summary: "Strategy Summary",
+  positioning: "Positioning Statement",
+  differentiators: "Brand Differentiators",
+};
+const exportLabel = (id) => EXPORT_LABEL[id] || STEP_LABEL[id];
 
 const DEPENDENCY_MAP = {
   opportunity: ["positioning"],
@@ -334,11 +400,11 @@ function getDownstream(id) {
 }
 
 const CREATIVE_CATEGORIES = [
-  { id: "Typography", hint: "A typeface style, weight, or pairing — plain words are fine." },
-  { id: "Color", hint: "A palette direction — warm vs. cool, bright vs. muted, one dominant hue vs. many." },
-  { id: "Imagery", hint: "Photography, illustration, iconography — and in what style?" },
-  { id: "Layout", hint: "Dense and information-rich, or open and spacious?" },
-  { id: "Materials & Touchpoints", hint: "Paper stock, packaging, signage, digital surfaces — whatever's relevant." },
+  { id: "Typography", hint: "A typeface style, weight, or pairing. Plain words are fine." },
+  { id: "Color", hint: "A palette direction: warm or cool, bright or muted, one dominant hue or many." },
+  { id: "Imagery", hint: "Photography, illustration, iconography, and in what style." },
+  { id: "Layout", hint: "Dense and information rich, or open and spacious?" },
+  { id: "Materials & Touchpoints", hint: "Paper stock, packaging, signage, digital surfaces, whatever's relevant." },
   { id: "Motion & Interaction", hint: "Subtle and quiet, or expressive and playful? Skip if not relevant." },
 ];
 
@@ -363,7 +429,7 @@ const CRITIQUE_ROLES = [
     "How does it land for someone scrolling past it in three seconds?",
     "What happens to this system at small scale?",
   ] },
-  { id: "professor", name: "Professor", focus: "growth and self-awareness", questions: [
+  { id: "professor", name: "Professor", focus: "growth and self awareness", questions: [
     "What assumptions did you challenge along the way?",
     "Where did your thinking change?",
     "What would you do differently starting over?",
@@ -473,7 +539,7 @@ export default function App() {
       try {
         const data = JSON.parse(ev.target.result);
         setProject(data);
-        setStep("challenge");
+        setStep("clientBrief");
       } catch {
         alert("That file doesn't look like a valid project file.");
       }
@@ -485,19 +551,21 @@ export default function App() {
     const p = project;
     const lines = [
       `# ${p.name || "Untitled Brand Strategy"}`,
-      p.client ? `_Client brief on file_\n` : "",
-      `## Executive Summary`, p.execSummary || "_Not yet written_", "",
-      `## The Challenge`, p.challenge || "_Not yet defined_", "",
-      `## Key Insight`, p.keyInsight || "_Not yet defined_", "",
-      `## Audience`, p.audience || "_Not yet defined_", "",
-      `## Opportunity`, p.opportunity.text || "_Not yet locked_", "",
-      `## Positioning`,
+      "",
+      `## ${exportLabel("summary")}`, p.execSummary || "Not yet written", "",
+      `## Communication Problem`, p.challenge || "Not yet defined", "",
+      `## ${exportLabel("research")}`, ...p.research.map((r) => `- ${r.text}`), "",
+      `## ${exportLabel("patterns")}`, ...p.patterns.map((pt) => `- ${pt.note}`), "",
+      `## Key Insight`, p.keyInsight || "Not yet defined", "",
+      `## Audience`, p.audience || "Not yet defined", "",
+      `## Opportunity`, p.opportunity.text || "Not yet locked", "",
+      `## ${exportLabel("positioning")}`,
       p.positioning.locked
         ? `For **${p.positioning.audience}**, unlike ${p.positioning.market}, this brand ${p.positioning.promise}, because ${p.positioning.rtb}.`
-        : "_Not yet locked_", "",
-      `## Differentiators`, ...p.differentiators.map((d) => `- ${d.text}`), "",
+        : "Not yet locked", "",
+      `## ${exportLabel("differentiators")}`, ...p.differentiators.map((d) => `- ${d.text}`), "",
       `## Brand Attributes (This, Not That)`, ...p.attributes.map((a) => `- **${a.this}**, not ${a.not}`), "",
-      `## Brand Pillars`, ...p.pillars.map((pl) => `- **${pl.name}** — ${pl.link}`), "",
+      `## Brand Pillars`, ...p.pillars.map((pl) => `- **${pl.name}**: ${pl.link}`), "",
       `## Brand Philosophy`,
       p.philosophy.what ? `**What:** ${p.philosophy.what}` : "",
       p.philosophy.how ? `**How:** ${p.philosophy.how}` : "",
@@ -505,7 +573,7 @@ export default function App() {
       "",
       `## Voice & Tone`, p.voice.style || "", p.voice.avoid ? `Never: ${p.voice.avoid}` : "", "",
       `## Brand Persona`, p.persona.description || "", p.persona.howDescribed ? `Others would describe them as: ${p.persona.howDescribed}` : "", p.persona.notThis ? `Would never: ${p.persona.notThis}` : "", "",
-      `## Creative Direction`, ...p.creative.filter((c) => !c.skipped).map((c) => `- **${c.category}**: ${c.approach} — _${c.justification}_`), "",
+      `## Creative Direction`, ...p.creative.filter((c) => !c.skipped).map((c) => `- **${c.category}**: ${c.approach}`), "",
     ];
     const blob = new Blob([lines.join("\n")], { type: "text/markdown" });
     const url = URL.createObjectURL(blob);
@@ -517,6 +585,9 @@ export default function App() {
   };
 
   const exportPDF = () => window.print();
+
+  const phases = [];
+  STEPS.forEach((s) => { if (s.phase && !phases.includes(s.phase)) phases.push(s.phase); });
 
   return (
     <div style={{ fontFamily: "Instrument Sans", fontWeight: 500, background: T.paper, color: T.ink, minHeight: "100vh" }}>
@@ -535,7 +606,7 @@ export default function App() {
       `}</style>
 
       {step === "entry" ? (
-        <EntryScreen project={project} setProject={setProject} onStart={() => setStep("challenge")} onLoad={() => fileInputRef.current?.click()} />
+        <EntryScreen project={project} setProject={setProject} onStart={() => setStep("clientBrief")} onLoad={() => fileInputRef.current?.click()} />
       ) : (
         <div className="flex">
           <aside className="no-print w-64 shrink-0 h-screen sticky top-0 flex flex-col" style={{ background: T.paperRaised, borderRight: `1px solid ${T.line}` }}>
@@ -544,26 +615,31 @@ export default function App() {
               <div className="leading-[1.05] truncate" style={{ fontSize: "23px", fontFamily: "Instrument Serif", color: T.ink }}>{project.name || "Untitled project"}</div>
             </div>
             <nav className="flex-1 overflow-y-auto py-3 px-2">
-              {STEPS.filter((s) => s.id !== "entry").map((s) => {
-                const active = s.id === step;
-                const unlocked = isUnlocked(s.id);
-                const ls = lockState(s.id);
-                const Icon = s.icon;
-                return (
-                  <button
-                    key={s.id}
-                    disabled={!unlocked}
-                    onClick={() => setStep(s.id)}
-                    className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-md text-left mb-0.5 transition disabled:opacity-35"
-                    style={{ fontSize: "13.5px", background: active ? T.signalSoft : "transparent", color: active ? T.signal : T.ink, fontFamily: "Instrument Sans", fontWeight: active ? 600 : 500 }}
-                  >
-                    <Icon size={15} />
-                    <span className="flex-1">{s.label}</span>
-                    {project.flags?.[s.id] && <AlertCircle size={13} style={{ color: T.rule }} />}
-                    {ls === true && !project.flags?.[s.id] && <Check size={13} style={{ color: T.marigold }} />}
-                  </button>
-                );
-              })}
+              {phases.map((phase) => (
+                <div key={phase} className="mb-3">
+                  <div className="px-3 pt-3 pb-1.5 uppercase font-semibold" style={{ fontSize: "10px", letterSpacing: "0.14em", color: T.inkSoft, opacity: 0.7 }}>{phase}</div>
+                  {STEPS.filter((s) => s.phase === phase).map((s) => {
+                    const active = s.id === step;
+                    const unlocked = isUnlocked(s.id);
+                    const ls = lockState(s.id);
+                    const Icon = s.icon;
+                    return (
+                      <button
+                        key={s.id}
+                        disabled={!unlocked}
+                        onClick={() => setStep(s.id)}
+                        className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-md text-left mb-0.5 transition disabled:opacity-35"
+                        style={{ fontSize: "13.5px", background: active ? T.signalSoft : "transparent", color: active ? T.signal : T.ink, fontFamily: "Instrument Sans", fontWeight: active ? 600 : 500 }}
+                      >
+                        <Icon size={15} />
+                        <span className="flex-1">{s.label}</span>
+                        {project.flags?.[s.id] && <AlertCircle size={13} style={{ color: T.rule }} />}
+                        {ls === true && !project.flags?.[s.id] && <Check size={13} style={{ color: T.marigold }} />}
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
             </nav>
             <div className="p-3 space-y-1" style={{ borderTop: `1px solid ${T.line}` }}>
               <button onClick={saveProject} className="w-full flex items-center gap-2 px-3 py-2 rounded-md" style={{ fontSize: "13px", color: T.inkSoft }}>
@@ -591,6 +667,7 @@ export default function App() {
               </div>
             )}
             <main className="print-area max-w-3xl mx-auto px-10 py-16">
+              {step === "clientBrief" && <ClientBriefStep project={project} setProject={setProject} onNext={() => setStep("challenge")} onOpen={openHandbook} />}
               {step === "challenge" && <ChallengeStep project={project} setProject={setProject} onNext={() => setStep("research")} onOpen={openHandbook} />}
               {step === "research" && <ResearchCapture project={project} setProject={setProject} onNext={() => setStep("patterns")} onOpen={openHandbook} />}
               {step === "patterns" && <PatternRecognition project={project} setProject={setProject} onNext={() => setStep("keyInsight")} onOpen={openHandbook} />}
@@ -605,8 +682,9 @@ export default function App() {
               {step === "voice" && <VoiceStep project={project} setProject={setProject} onNext={() => setStep("persona")} onOpen={openHandbook} onResolveFlag={resolveFlag} />}
               {step === "persona" && <PersonaStep project={project} setProject={setProject} onNext={() => setStep("creative")} onOpen={openHandbook} onResolveFlag={resolveFlag} />}
               {step === "creative" && <CreativeDirectionStep project={project} setProject={setProject} onNext={() => setStep("summary")} onOpen={openHandbook} onResolveFlag={resolveFlag} />}
-              {step === "summary" && <ExecutiveSummaryStep project={project} setProject={setProject} onNext={() => setStep("critique")} onOpen={openHandbook} onResolveFlag={resolveFlag} />}
-              {step === "critique" && <CritiquePrepStep project={project} setProject={setProject} onNext={() => setStep("brandStrategy")} />}
+              {step === "summary" && <TellTheStoryStep project={project} setProject={setProject} onNext={() => setStep("critique")} onOpen={openHandbook} onResolveFlag={resolveFlag} />}
+              {step === "critique" && <CritiquePrepStep project={project} setProject={setProject} onNext={() => setStep("finalReview")} />}
+              {step === "finalReview" && <FinalReviewStep project={project} setStep={setStep} onNext={() => setStep("brandStrategy")} />}
               {step === "brandStrategy" && <BrandStrategyStep project={project} onExportMarkdown={exportMarkdown} onExportPDF={exportPDF} />}
             </main>
           </div>
@@ -644,28 +722,8 @@ export default function App() {
 }
 
 /* ============================================================
-   SHARED SCREEN COMPONENTS
+   ENTRY
    ============================================================ */
-function SectionHeader({ eyebrow, title, sub }) {
-  return (
-    <div className="mb-11 pb-7" style={{ borderBottom: `1.5px solid ${T.rule}` }}>
-      <div className="uppercase font-semibold mb-4" style={{ fontSize: "11px", letterSpacing: "0.16em", color: T.inkSoft, fontFamily: "Instrument Sans" }}>{eyebrow}</div>
-      <h1 className="mb-4" style={{ fontSize: "46px", lineHeight: "1.0", fontFamily: "Instrument Serif", letterSpacing: "-0.02em", color: T.ink }}>{title}</h1>
-      {sub && <p className="italic" style={{ fontSize: "17px", lineHeight: "1.4", color: T.inkSoft, maxWidth: "30rem", fontFamily: "Instrument Serif" }}>{sub}</p>}
-    </div>
-  );
-}
-
-function NextButton({ onClick, disabled, children = "Continue" }) {
-  return (
-    <button onClick={onClick} disabled={disabled}
-      className="mt-8 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-md font-semibold disabled:opacity-30"
-      style={{ fontSize: "14px", background: T.ink, color: T.paperRaised, fontFamily: "Instrument Sans" }}>
-      {children} <ArrowRight size={15} />
-    </button>
-  );
-}
-
 function EntryScreen({ project, setProject, onStart, onLoad }) {
   return (
     <div className="min-h-screen px-6" style={{ background: T.paper }}>
@@ -687,12 +745,6 @@ function EntryScreen({ project, setProject, onStart, onLoad }) {
             <input value={project.name} onChange={(e) => setProject({ ...project, name: e.target.value })} placeholder="e.g. Amaranth Bakery"
               className="w-full rounded-md px-3.5 py-2.5 outline-none" style={{ fontSize: "15px", background: T.paperRaised, border: `1px solid ${T.line}` }} />
           </div>
-          <div>
-            <label className="block uppercase font-semibold mb-2" style={{ fontSize: "11px", letterSpacing: "0.1em", color: T.inkSoft }}>Client Brief</label>
-            <textarea value={project.client} onChange={(e) => setProject({ ...project, client: e.target.value })}
-              placeholder="Paste the client's project brief, assignment, RFP, or project request." rows={4}
-              className="w-full rounded-md px-3.5 py-2.5 outline-none resize-none" style={{ fontSize: "15px", background: T.paperRaised, border: `1px solid ${T.line}` }} />
-          </div>
           <button onClick={onStart} disabled={!project.name.trim()}
             className="w-full py-4 rounded-md font-bold disabled:opacity-30 mt-3"
             style={{ fontSize: "15.5px", letterSpacing: "-0.005em", background: T.ink, color: "#fff" }}>
@@ -708,19 +760,51 @@ function EntryScreen({ project, setProject, onStart, onLoad }) {
 }
 
 /* ============================================================
-   THE CHALLENGE
+   CLIENT BRIEF
+   ============================================================ */
+function ClientBriefStep({ project, setProject, onNext, onOpen }) {
+  return (
+    <div>
+      <SectionHeader
+        eyebrow="01"
+        title="Client Brief"
+        blurb="Every project begins with understanding the assignment. Before you decide how something should look, make sure you understand what you've actually been asked to create. Great strategy begins with listening before making decisions."
+        note="The better you understand the brief, the better your decisions become."
+      />
+      <div className="mb-1.5" style={{ fontSize: "16.5px", color: T.ink, fontFamily: "Instrument Serif", fontStyle: "italic" }}>Summarize the brief in your own words.</div>
+      <p className="mb-3" style={{ fontSize: "13px", color: T.inkSoft }}>Focus on the client's goal, not simply what they asked you to make.</p>
+      <textarea
+        value={project.client}
+        onChange={(e) => setProject({ ...project, client: e.target.value })}
+        rows={5}
+        placeholder="What is the client actually trying to accomplish?"
+        className="w-full rounded-md px-4 py-3 outline-none resize-none"
+        style={{ fontSize: "15px", background: T.paperRaised, border: `1px solid ${T.line}` }}
+        autoFocus
+      />
+      <NextButton onClick={onNext} disabled={!project.client.trim()} />
+    </div>
+  );
+}
+
+/* ============================================================
+   COMMUNICATION PROBLEM
    ============================================================ */
 function ChallengeStep({ project, setProject, onNext, onOpen }) {
   return (
     <div>
-      <SectionHeader eyebrow="01" title="The Challenge" sub="Describe what the client is trying to accomplish, and what's preventing them from getting there." />
-      <div className="mb-1.5 font-medium" style={{ fontSize: "18px", color: T.ink, fontFamily: "Instrument Serif" }}>What is the challenge?</div>
-      <p className="mb-3" style={{ fontSize: "13px", color: T.inkSoft }}>Get this wrong, and everything after it is wrong too.</p>
+      <SectionHeader
+        eyebrow="02"
+        title="Communication Problem"
+        blurb="Every design project is trying to change something. Clients often tell you what they want to make, but not the problem they're trying to solve. Your job is to identify the communication problem behind the request."
+        note="Design solves problems, not requests."
+      />
+      <div className="mb-1.5" style={{ fontSize: "16.5px", color: T.ink, fontFamily: "Instrument Serif", fontStyle: "italic" }}>What communication problem does this project need to solve?</div>
       <textarea
         value={project.challenge}
         onChange={(e) => setProject({ ...project, challenge: e.target.value })}
         rows={4}
-        placeholder="What is the client trying to accomplish? What's standing in the way?"
+        placeholder="Not what they asked for. What's actually broken, unclear, or missing."
         className="w-full rounded-md px-4 py-3 outline-none resize-none"
         style={{ fontSize: "15px", background: T.paperRaised, border: `1px solid ${T.line}` }}
         autoFocus
@@ -749,8 +833,13 @@ function ResearchCapture({ project, setProject, onNext, onOpen }) {
 
   return (
     <div>
-      <SectionHeader eyebrow="02" title="Discover" sub="Gather everything you can before you begin making decisions. Look for observations about the audience, competitors, industry, and culture. Don't worry about solutions yet — your job is simply to notice." />
-      <p className="mb-4" style={{ fontSize: "13px", color: T.inkSoft }}>This work informs the strategy. It won't appear in the final document.</p>
+      <SectionHeader
+        eyebrow="03"
+        title="Research"
+        blurb="Good strategy begins with curiosity. Before you start solving problems, spend time understanding them. Research helps you replace assumptions with evidence and gives your creative decisions something solid to stand on."
+        note="Strong research produces observations, not opinions."
+      />
+      <p className="mb-4" style={{ fontSize: "13px", color: T.inkSoft }}>Don't stop at the brief. Study competitors, customers, reviews, trends, and culture. This work informs the strategy and will not appear in the final document.</p>
 
       <div className="rounded-xl p-5 mb-6" style={{ background: T.paperRaised, border: `1px solid ${T.line}` }}>
         <div className="flex gap-2 mb-3">
@@ -762,7 +851,7 @@ function ResearchCapture({ project, setProject, onNext, onOpen }) {
           ))}
         </div>
         <textarea value={draft.text} onChange={(e) => setDraft({ ...draft, text: e.target.value })} rows={2}
-          placeholder="What did you find or notice?"
+          placeholder="What have you noticed?"
           className="w-full rounded-md px-3.5 py-2.5 outline-none resize-none mb-3" style={{ fontSize: "14.5px", background: T.paperRaised, border: `1px solid ${T.line}` }} />
         <button onClick={add} disabled={!draft.text.trim()} className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-md font-medium disabled:opacity-30" style={{ fontSize: "13px", background: T.ink, color: "#fff" }}>
           <Plus size={14} /> Add
@@ -800,7 +889,13 @@ function PatternRecognition({ project, setProject, onNext, onOpen }) {
 
   return (
     <div>
-      <SectionHeader eyebrow="03" title="Patterns" sub="As you research, certain ideas begin to repeat. Look for themes, tensions, behaviors, or opportunities that appear more than once. Patterns are where strategy begins." />
+      <SectionHeader
+        eyebrow="04"
+        title="Patterns"
+        blurb="Research becomes strategy when you recognize what repeats. Individual observations are interesting, but patterns reveal what actually matters. As you review your research, look for themes, behaviors, tensions, or opportunities that appear more than once."
+        note="A pattern is an interpretation, not a summary."
+      />
+      <p className="mb-4" style={{ fontSize: "13px", color: T.inkSoft }}>Don't list everything you found. Identify the ideas that consistently surfaced and deserve your attention.</p>
 
       {project.research.length > 0 && (
         <div className="rounded-lg px-4 py-3 mb-7" style={{ background: T.paper, border: `1px solid ${T.line}` }}>
@@ -822,8 +917,7 @@ function PatternRecognition({ project, setProject, onNext, onOpen }) {
         </div>
       )}
 
-      <div className="mb-1.5 font-medium" style={{ fontSize: "18px", color: T.ink, fontFamily: "Instrument Serif" }}>Name a pattern.</div>
-      <p className="mb-3" style={{ fontSize: "13px", color: T.inkSoft }}>A pattern is an interpretation, not a summary.</p>
+      <div className="mb-1.5" style={{ fontSize: "16.5px", color: T.ink, fontFamily: "Instrument Serif", fontStyle: "italic" }}>What pattern do you see?</div>
       <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} placeholder="What do a few of these suggest, together?"
         className="w-full rounded-md px-4 py-3 outline-none resize-none" style={{ fontSize: "15px", background: T.paperRaised, border: `1px solid ${T.line}` }} />
       <button onClick={add} disabled={!note.trim()} className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-md font-semibold disabled:opacity-30" style={{ fontSize: "13.5px", background: T.ink, color: "#fff" }}>
@@ -841,7 +935,13 @@ function PatternRecognition({ project, setProject, onNext, onOpen }) {
 function KeyInsightStep({ project, setProject, onNext, onOpen }) {
   return (
     <div>
-      <SectionHeader eyebrow="04" title="Key Insight" sub="If you could share only one discovery from your research, what would it be? This insight should change how you think about the project and influence every decision that follows." />
+      <SectionHeader
+        eyebrow="05"
+        title="Key Insight"
+        blurb="Every strong strategy is built on one clear insight. Research gives you information. An insight gives that information meaning. It's the discovery that changes how you think about the project and becomes the foundation for the decisions that follow."
+        note="A good insight gives the project direction."
+      />
+      <p className="mb-4" style={{ fontSize: "13px", color: T.inkSoft }}>Review everything you've learned. If this insight changed, your strategy would likely change too.</p>
 
       {project.patterns.length > 0 && (
         <div className="rounded-lg px-4 py-3 mb-7" style={{ background: T.paper, border: `1px solid ${T.line}` }}>
@@ -852,15 +952,14 @@ function KeyInsightStep({ project, setProject, onNext, onOpen }) {
         </div>
       )}
 
-      <div className="mb-1.5 font-medium" style={{ fontSize: "18px", color: T.ink, fontFamily: "Instrument Serif" }}>
+      <div className="mb-1.5" style={{ fontSize: "16.5px", color: T.ink, fontFamily: "Instrument Serif", fontStyle: "italic" }}>
         What's the most important thing you've learned?
       </div>
-      <p className="mb-3" style={{ fontSize: "13px", color: T.inkSoft }}>An insight is not another observation — it's the one that changes your thinking.</p>
       <textarea
         value={project.keyInsight}
         onChange={(e) => setProject({ ...project, keyInsight: e.target.value })}
         rows={3}
-        placeholder="The discovery that changes the direction — not a summary of your research."
+        placeholder="The discovery that changes the direction, not a summary of your research."
         className="w-full rounded-md px-4 py-3 outline-none resize-none"
         style={{ fontSize: "15px", background: T.paperRaised, border: `1px solid ${T.line}` }}
         autoFocus
@@ -876,24 +975,20 @@ function KeyInsightStep({ project, setProject, onNext, onOpen }) {
 function AudienceStep({ project, setProject, onNext, onOpen }) {
   return (
     <div>
-      <SectionHeader eyebrow="05" title="Audience" sub="Sharpened by research and insight — not copied from the brief." />
+      <SectionHeader
+        eyebrow="06"
+        title="Audience"
+        blurb="Great brands are built for specific people. Research helps you understand the world. Defining your audience helps you decide who matters most. The more clearly you understand the people you're designing for, the more focused your strategy becomes."
+        note="When you try to speak to everyone, you usually connect with no one."
+      />
+      <p className="mb-4" style={{ fontSize: "13px", color: T.inkSoft }}>Think beyond demographics. Consider their goals, motivations, needs, and behaviors.</p>
 
-      {project.keyInsight && (
-        <div className="rounded-lg px-4 py-3 mb-7" style={{ background: T.paper, border: `1px solid ${T.line}` }}>
-          <div className="uppercase font-semibold mb-1" style={{ fontSize: "10.5px", color: T.inkSoft }}>Your key insight</div>
-          <p className="italic" style={{ fontSize: "14.5px", color: T.inkSoft, fontFamily: "Instrument Serif" }}>{project.keyInsight}</p>
-        </div>
-      )}
-
-      <div className="mb-1.5 font-medium" style={{ fontSize: "18px", color: T.ink, fontFamily: "Instrument Serif" }}>
-        Define the primary audience.
-      </div>
-      <p className="mb-3" style={{ fontSize: "13px", color: T.inkSoft }}>Who is this really for, and what do they need from this brand?</p>
+      <div className="mb-1.5" style={{ fontSize: "16.5px", color: T.ink, fontFamily: "Instrument Serif", fontStyle: "italic" }}>Who is this brand trying to reach?</div>
       <textarea
         value={project.audience}
         onChange={(e) => setProject({ ...project, audience: e.target.value })}
-        rows={3}
-        placeholder="Not 'everyone' — the specific person or group this has to work for."
+        rows={4}
+        placeholder="Describe the audience this brand should serve."
         className="w-full rounded-md px-4 py-3 outline-none resize-none"
         style={{ fontSize: "15px", background: T.paperRaised, border: `1px solid ${T.line}` }}
         autoFocus
@@ -923,7 +1018,12 @@ function OpportunityStep({ project, setProject, onNext, onOpen, onRequestReopen 
 
   return (
     <div>
-      <SectionHeader eyebrow="06 — First lock" title="Opportunity" sub="Great brands don't solve every problem — they solve the right one. Based on your research and insight, describe the opportunity this brand should pursue." />
+      <SectionHeader
+        eyebrow="07, first lock"
+        title="Opportunity"
+        blurb="Not every problem is worth solving. Strong strategies focus on one opportunity instead of trying to solve everything at once. Your research should help you recognize where this brand can create the greatest value or make the biggest difference."
+        note="The best opportunities come from understanding what others have overlooked."
+      />
 
       <div className="mb-4">
         <div className="uppercase font-semibold mb-2" style={{ fontSize: "10.5px", letterSpacing: "0.08em", color: T.inkSoft }}>Link supporting patterns</div>
@@ -932,16 +1032,15 @@ function OpportunityStep({ project, setProject, onNext, onOpen, onRequestReopen 
             <button key={p.id} disabled={o.locked} onClick={() => togglePattern(p.id)}
               className="px-3 py-1.5 rounded-full transition disabled:opacity-60"
               style={{ fontSize: "12.5px", background: o.patternIds.includes(p.id) ? T.ink : T.paperRaised, color: o.patternIds.includes(p.id) ? "#fff" : T.ink, border: `1px solid ${T.line}` }}>
-              {p.note.slice(0, 40)}{p.note.length > 40 ? "…" : ""}
+              {p.note.slice(0, 40)}{p.note.length > 40 ? "..." : ""}
             </button>
           ))}
         </div>
       </div>
 
-      <div className="mb-1.5 font-medium" style={{ fontSize: "18px", color: T.ink, fontFamily: "Instrument Serif" }}>Given everything you've learned, where is the opportunity?</div>
-      <p className="mb-3" style={{ fontSize: "13px", color: T.inkSoft }}>An opportunity is a bet. Make sure it's one you can defend.</p>
+      <div className="mb-1.5" style={{ fontSize: "16.5px", color: T.ink, fontFamily: "Instrument Serif", fontStyle: "italic" }}>Where is the opportunity?</div>
       <textarea value={o.text} disabled={o.locked} onChange={(e) => setProject({ ...project, opportunity: { ...o, text: e.target.value } })}
-        rows={3} placeholder="There's an opportunity to..."
+        rows={3} placeholder="Based on your research and insight, describe the opportunity this brand should pursue."
         className="w-full rounded-md px-4 py-3 outline-none resize-none disabled:opacity-70"
         style={{ fontSize: "15px", background: T.paperRaised, border: `1px solid ${T.line}` }} />
 
@@ -965,13 +1064,13 @@ function OpportunityStep({ project, setProject, onNext, onOpen, onRequestReopen 
 
       {showReflection && (
         <ReflectionModal
-          prompts={["What evidence gave you confidence in this decision?", "What's one alternative opportunity you considered and rejected — and why?"]}
+          prompts={["What evidence gave you confidence in this decision?", "What's one alternative opportunity you considered and rejected, and why?"]}
           onSubmit={doLock}
           onClose={() => setShowReflection(false)}
         />
       )}
 
-      <NextButton onClick={onNext}>{o.locked ? "Continue" : "Continue — I'll come back to this"}</NextButton>
+      <NextButton onClick={onNext}>{o.locked ? "Continue" : "Continue, I'll come back to this"}</NextButton>
     </div>
   );
 }
@@ -980,7 +1079,7 @@ function OpportunityStep({ project, setProject, onNext, onOpen, onRequestReopen 
    POSITIONING
    ============================================================ */
 const POSITIONING_MICRO_STEPS = [
-  { key: "who", field: "audience", q: "Who is this most clearly for?", ph: "Not \u201Ceveryone\u201D \u2014 the specific person or group this has to work for." },
+  { key: "who", field: "audience", q: "Who is this most clearly for?", ph: "Not everyone. The specific person or group this has to work for." },
   { key: "needs", field: null, q: "What do they need, want, or value?", ph: "What actually matters to this person in this situation?" },
   { key: "alternatives", field: "market", q: "What alternatives are they currently choosing from?", ph: "What do they do instead, today, without this?" },
   { key: "difference", field: "rtb", q: "What makes this meaningfully different?", ph: "Different in a way that actually matters to them." },
@@ -1014,12 +1113,16 @@ function PositioningStep({ project, setProject, onNext, onOpen, onRequestReopen,
   return (
     <div>
       {project.flags?.positioning && <FlagBanner onResolve={() => onResolveFlag("positioning")} />}
-      <SectionHeader eyebrow="07 — The spine" title="Positioning" sub="Who this brand is for, what it promises, and why it matters — in one sentence." />
-      <p className="mb-6" style={{ fontSize: "13px", color: T.inkSoft }}>This becomes the foundation for every design decision that follows.</p>
+      <SectionHeader
+        eyebrow="08, the spine"
+        title="Positioning"
+        blurb="Positioning defines where the brand belongs. A positioning statement helps explain who the brand is for, what makes it different, and why it matters. It becomes the foundation for every creative decision that follows."
+        note="Positioning gives every design decision a purpose."
+      />
 
       {typeof stage === "number" && (
         <>
-          <div className="mb-2 font-medium" style={{ fontSize: "18px", color: T.ink, fontFamily: "Instrument Serif" }}>{POSITIONING_MICRO_STEPS[stage].q}</div>
+          <div className="mb-2" style={{ fontSize: "16.5px", color: T.ink, fontFamily: "Instrument Serif", fontStyle: "italic" }}>{POSITIONING_MICRO_STEPS[stage].q}</div>
           <textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={2} placeholder={POSITIONING_MICRO_STEPS[stage].ph}
             className="w-full rounded-md px-4 py-3 outline-none resize-none" style={{ fontSize: "15px", background: T.paperRaised, border: `1px solid ${T.line}` }} autoFocus />
           <button onClick={() => submitMicro(POSITIONING_MICRO_STEPS[stage])} disabled={!draft.trim()}
@@ -1044,7 +1147,7 @@ function PositioningStep({ project, setProject, onNext, onOpen, onRequestReopen,
 
           <div className="mt-4 rounded-lg px-4 py-3" style={{ background: T.paper, border: `1px solid ${T.line}` }}>
             <p style={{ fontSize: "13.5px", color: T.inkSoft }}>
-              <b>Swap test:</b> could a competitor say this exact sentence? If yes, it isn't specific enough yet.
+              Swap test: could a competitor say this exact sentence? If yes, it isn't specific enough yet.
             </p>
           </div>
 
@@ -1074,7 +1177,7 @@ function PositioningStep({ project, setProject, onNext, onOpen, onRequestReopen,
               onClose={() => setShowReflection(false)}
             />
           )}
-          <NextButton onClick={onNext}>{p.locked ? "Continue" : "Continue — I'll come back to this"}</NextButton>
+          <NextButton onClick={onNext}>{p.locked ? "Continue" : "Continue, I'll come back to this"}</NextButton>
         </>
       )}
     </div>
@@ -1096,8 +1199,12 @@ function DifferentiatorsStep({ project, setProject, onNext, onOpen, onResolveFla
   return (
     <div>
       {project.flags?.differentiators && <FlagBanner onResolve={() => onResolveFlag("differentiators")} />}
-      <SectionHeader eyebrow="08" title="Differentiators" sub="List the qualities, experiences, or beliefs that make this brand meaningfully different. Focus on differences people actually value — not features anyone could claim." />
-      <p className="mb-6" style={{ fontSize: "13px", color: T.inkSoft }}>If a competitor could say the same thing, it probably isn't a differentiator.</p>
+      <SectionHeader
+        eyebrow="09"
+        title="Differentiators"
+        blurb="People choose brands for a reason. A strong brand stands for something people value. Differentiators help explain why someone would choose this brand over another. They are not features or buzzwords. They are meaningful reasons to believe."
+        note="People choose brands for a reason. Make yours clear."
+      />
 
       <div className="rounded-lg px-4 py-3 mb-5" style={{ background: T.paper, border: `1px solid ${T.line}` }}>
         <p className="italic" style={{ fontSize: "14.5px", color: T.inkSoft, fontFamily: "Instrument Serif" }}>For {project.positioning.audience}, unlike {project.positioning.market}, this brand {project.positioning.promise}, because {project.positioning.rtb}.</p>
@@ -1112,7 +1219,7 @@ function DifferentiatorsStep({ project, setProject, onNext, onOpen, onResolveFla
         ))}
       </div>
 
-      <div className="mb-1.5 font-medium" style={{ fontSize: "18px", color: T.ink, fontFamily: "Instrument Serif" }}>Why would someone choose this instead of a competitor?</div>
+      <div className="mb-1.5" style={{ fontSize: "16.5px", color: T.ink, fontFamily: "Instrument Serif", fontStyle: "italic" }}>Why would someone choose this instead of a competitor?</div>
       <textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={2} placeholder="A feature, approach, or capability the alternatives don't have."
         className="w-full rounded-md px-3.5 py-2.5 outline-none resize-none" style={{ fontSize: "15px", background: T.paperRaised, border: `1px solid ${T.line}` }} />
       <button onClick={add} disabled={!draft.trim()} className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-md font-semibold disabled:opacity-30" style={{ fontSize: "13.5px", background: T.ink, color: "#fff" }}>
@@ -1125,7 +1232,7 @@ function DifferentiatorsStep({ project, setProject, onNext, onOpen, onResolveFla
 }
 
 /* ============================================================
-   ATTRIBUTES (This, Not That)
+   BRAND ATTRIBUTES
    ============================================================ */
 function AttributesStep({ project, setProject, onNext, onOpen, onResolveFlag }) {
   const [thisDraft, setThisDraft] = useState("");
@@ -1140,8 +1247,12 @@ function AttributesStep({ project, setProject, onNext, onOpen, onResolveFlag }) 
   return (
     <div>
       {project.flags?.attributes && <FlagBanner onResolve={() => onResolveFlag("attributes")} />}
-      <SectionHeader eyebrow="09" title="Brand Attributes" sub="Honest contrasts — what this brand truly is, and the tempting opposite it deliberately isn't." />
-      <p className="mb-6" style={{ fontSize: "13px", color: T.inkSoft }}>These qualities should influence every visual and verbal decision you make.</p>
+      <SectionHeader
+        eyebrow="10"
+        title="Brand Attributes"
+        blurb="Every brand creates an impression. Brand attributes describe the qualities people should consistently experience whenever they interact with the brand. They influence visual identity, messaging, photography, illustration, motion, and every other creative decision."
+        note="People should recognize these qualities before they recognize the logo."
+      />
 
       <div className="space-y-2 mb-5">
         {project.attributes.map((a) => (
@@ -1164,7 +1275,7 @@ function AttributesStep({ project, setProject, onNext, onOpen, onResolveFlag }) 
           <input value={notDraft} onChange={(e) => setNotDraft(e.target.value)} placeholder="e.g., slow" className="w-full rounded-md px-3.5 py-2.5 outline-none" style={{ fontSize: "15px", background: T.paperRaised, border: `1px solid ${T.line}` }} />
         </div>
       </div>
-      <p className="mt-2" style={{ fontSize: "12.5px", color: T.inkSoft }}>The "not" should be a real, plausible alternative a competitor could choose — not a strawman.</p>
+      <p className="mt-2" style={{ fontSize: "12.5px", color: T.inkSoft }}>The "not" should be a real, plausible alternative a competitor could choose, not a strawman.</p>
       <button onClick={add} disabled={!thisDraft.trim() || !notDraft.trim()} className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-md font-semibold disabled:opacity-30" style={{ fontSize: "13.5px", background: T.ink, color: "#fff" }}>
         <Plus size={14} /> Add pair
       </button>
@@ -1175,7 +1286,7 @@ function AttributesStep({ project, setProject, onNext, onOpen, onResolveFlag }) 
 }
 
 /* ============================================================
-   PILLARS
+   BRAND PILLARS
    ============================================================ */
 function PillarsStep({ project, setProject, onNext, onOpen, onResolveFlag }) {
   const p = project.positioning;
@@ -1191,8 +1302,12 @@ function PillarsStep({ project, setProject, onNext, onOpen, onResolveFlag }) {
   return (
     <div>
       {project.flags?.pillars && <FlagBanner onResolve={() => onResolveFlag("pillars")} />}
-      <SectionHeader eyebrow="10" title="Brand Pillars" sub="A few strategic ideas, each derived from your positioning — not brainstormed fresh." />
-      <p className="mb-6" style={{ fontSize: "13px", color: T.inkSoft }}>These are the beliefs the brand should never compromise.</p>
+      <SectionHeader
+        eyebrow="11"
+        title="Brand Pillars"
+        blurb="Strong brands are built on consistent principles. Brand pillars represent the ideas the brand should continually reinforce through its actions, messaging, and experiences. They help teams make better decisions long after this project is complete."
+        note="When you're unsure what to do, your pillars should point the way."
+      />
 
       <div className="rounded-lg px-4 py-3 mb-5" style={{ background: T.paper, border: `1px solid ${T.line}` }}>
         <p className="italic" style={{ fontSize: "14.5px", color: T.inkSoft, fontFamily: "Instrument Serif" }}>For {p.audience}, unlike {p.market}, this brand {p.promise}, because {p.rtb}.</p>
@@ -1210,7 +1325,8 @@ function PillarsStep({ project, setProject, onNext, onOpen, onResolveFlag }) {
         ))}
       </div>
 
-      <label className="block font-medium mb-1.5" style={{ fontSize: "12.5px", color: T.inkSoft }}>Pillar name</label>
+      <div className="mb-1.5" style={{ fontSize: "16.5px", color: T.ink, fontFamily: "Instrument Serif", fontStyle: "italic" }}>What should this brand always stand for?</div>
+      <label className="block font-medium mb-1.5 mt-3" style={{ fontSize: "12.5px", color: T.inkSoft }}>Pillar name</label>
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="A short, ownable name." className="w-full rounded-md px-3.5 py-2.5 outline-none mb-3" style={{ fontSize: "15px", background: T.paperRaised, border: `1px solid ${T.line}` }} />
       <label className="block font-medium mb-1.5" style={{ fontSize: "12.5px", color: T.inkSoft }}>Which part of your positioning does this come from?</label>
       <input value={link} onChange={(e) => setLink(e.target.value)} className="w-full rounded-md px-3.5 py-2.5 outline-none" style={{ fontSize: "15px", background: T.paperRaised, border: `1px solid ${T.line}` }} />
@@ -1224,7 +1340,7 @@ function PillarsStep({ project, setProject, onNext, onOpen, onResolveFlag }) {
 }
 
 /* ============================================================
-   PHILOSOPHY
+   BRAND PHILOSOPHY
    ============================================================ */
 function PhilosophyStep({ project, setProject, onNext, onOpen, onResolveFlag }) {
   const ph = project.philosophy;
@@ -1234,7 +1350,13 @@ function PhilosophyStep({ project, setProject, onNext, onOpen, onResolveFlag }) 
   return (
     <div>
       {project.flags?.philosophy && <FlagBanner onResolve={() => onResolveFlag("philosophy")} />}
-      <SectionHeader eyebrow="11" title="Brand Philosophy" sub="What you do, how you do it, and why it matters." />
+      <SectionHeader
+        eyebrow="12"
+        title="Brand Philosophy"
+        blurb="Strong brands know what they stand for. A brand philosophy explains what the brand does, how it does it differently, and why that matters. It gives people inside and outside the organization a shared understanding of the brand's purpose."
+        note="A strong philosophy helps people understand what the brand stands for."
+      />
+      <p className="mb-5" style={{ fontSize: "13px", color: T.inkSoft }}>Answer each question honestly. Someone unfamiliar with the brand should quickly understand what makes it meaningful.</p>
       <div className="space-y-5">
         {[["what", "What do you do?"], ["how", "How do you do it differently?"], ["why", "Why does it matter?"]].map(([field, label]) => (
           <div key={field}>
@@ -1259,22 +1381,27 @@ function VoiceStep({ project, setProject, onNext, onOpen, onResolveFlag }) {
   return (
     <div>
       {project.flags?.voice && <FlagBanner onResolve={() => onResolveFlag("voice")} />}
-      <SectionHeader eyebrow="12" title="Voice & Tone" sub="Imagine every conversation, caption, email, and advertisement. What should the brand consistently sound like — and what should it avoid?" />
-      <div className="mb-1.5 font-medium" style={{ fontSize: "18px", color: T.ink, fontFamily: "Instrument Serif" }}>If this brand spoke, how would it sound?</div>
-      <p className="mb-3" style={{ fontSize: "13px", color: T.inkSoft }}>If it doesn't sound like the brand with the logo removed, it isn't the voice yet.</p>
+      <SectionHeader
+        eyebrow="13"
+        title="Voice & Tone"
+        blurb="Every brand has a voice. A consistent voice helps people recognize the brand wherever they encounter it. Whether someone reads a website, social media post, email, or advertisement, it should always sound like the same brand."
+        note="If someone read it out loud, would they recognize the brand?"
+      />
+      <div className="mb-1.5" style={{ fontSize: "16.5px", color: T.ink, fontFamily: "Instrument Serif", fontStyle: "italic" }}>If this brand spoke, how would it sound?</div>
+      <p className="mb-3" style={{ fontSize: "13px", color: T.inkSoft }}>Focus on personality, not specific phrases or marketing language.</p>
       <label className="block uppercase font-semibold mb-1.5" style={{ fontSize: "10.5px", letterSpacing: "0.08em", color: T.inkSoft }}>How it sounds</label>
       <textarea value={v.style} onChange={(e) => setProject({ ...project, voice: { ...v, style: e.target.value } })} rows={2}
         placeholder="Casual or formal? Playful or serious?" className="w-full rounded-md px-3.5 py-2.5 outline-none resize-none mb-4" style={{ fontSize: "15px", background: T.paperRaised, border: `1px solid ${T.line}` }} />
       <label className="block uppercase font-semibold mb-1.5" style={{ fontSize: "10.5px", letterSpacing: "0.08em", color: T.inkSoft }}>Would never sound like</label>
       <textarea value={v.avoid} onChange={(e) => setProject({ ...project, voice: { ...v, avoid: e.target.value } })} rows={2}
-        placeholder="Words, phrases, or tones that are off-limits." className="w-full rounded-md px-3.5 py-2.5 outline-none resize-none" style={{ fontSize: "15px", background: T.paperRaised, border: `1px solid ${T.line}` }} />
+        placeholder="Words, phrases, or tones that are off limits." className="w-full rounded-md px-3.5 py-2.5 outline-none resize-none" style={{ fontSize: "15px", background: T.paperRaised, border: `1px solid ${T.line}` }} />
       <NextButton onClick={confirm} disabled={!v.style.trim()} />
     </div>
   );
 }
 
 /* ============================================================
-   PERSONA
+   BRAND PERSONA
    ============================================================ */
 function PersonaStep({ project, setProject, onNext, onOpen, onResolveFlag }) {
   const per = project.persona;
@@ -1283,11 +1410,16 @@ function PersonaStep({ project, setProject, onNext, onOpen, onResolveFlag }) {
   return (
     <div>
       {project.flags?.persona && <FlagBanner onResolve={() => onResolveFlag("persona")} />}
-      <SectionHeader eyebrow="13" title="Brand Persona" sub="Think beyond demographics. Imagine this brand as a real person whose personality shapes every interaction." />
-      <p className="mb-6" style={{ fontSize: "13px", color: T.inkSoft }}>If two writers can't picture the same person, the persona isn't specific enough.</p>
+      <SectionHeader
+        eyebrow="14"
+        title="Brand Persona"
+        blurb="People connect with people. Imagining the brand as a person creates consistency across design, writing, and customer experience. A clear personality helps everyone working on the brand make decisions that feel authentic."
+        note="Designing for a personality is easier than designing for a demographic."
+      />
+      <p className="mb-5" style={{ fontSize: "13px", color: T.inkSoft }}>Picture this brand walking into a room. Describe the person you see.</p>
       <label className="block font-medium mb-1.5" style={{ fontSize: "16px", color: T.ink, fontFamily: "Instrument Serif" }}>Who would it be?</label>
       <textarea value={per.description} onChange={(e) => setProject({ ...project, persona: { ...per, description: e.target.value } })} rows={3}
-        placeholder="Describe them like a character — how they act, what they care about." className="w-full rounded-md px-3.5 py-2.5 outline-none resize-none mb-4" style={{ fontSize: "15px", background: T.paperRaised, border: `1px solid ${T.line}` }} />
+        placeholder="Describe them like a character. How they act, what they care about." className="w-full rounded-md px-3.5 py-2.5 outline-none resize-none mb-4" style={{ fontSize: "15px", background: T.paperRaised, border: `1px solid ${T.line}` }} />
       <label className="block font-medium mb-1.5" style={{ fontSize: "16px", color: T.ink, fontFamily: "Instrument Serif" }}>How would people describe them?</label>
       <textarea value={per.howDescribed} onChange={(e) => setProject({ ...project, persona: { ...per, howDescribed: e.target.value } })} rows={2}
         className="w-full rounded-md px-3.5 py-2.5 outline-none resize-none mb-4" style={{ fontSize: "15px", background: T.paperRaised, border: `1px solid ${T.line}` }} />
@@ -1327,8 +1459,12 @@ function CreativeDirectionStep({ project, setProject, onNext, onOpen, onResolveF
   return (
     <div>
       {project.flags?.creative && <FlagBanner onResolve={() => onResolveFlag("creative")} />}
-      <SectionHeader eyebrow="14" title="Creative Direction" sub="Translate your strategy into creative direction. Describe the feeling you're trying to create before thinking about logos, colors, or typography." />
-      <p className="mb-6" style={{ fontSize: "13px", color: T.inkSoft }}>If you can't name the feeling, you're not ready to choose the typeface.</p>
+      <SectionHeader
+        eyebrow="15"
+        title="Creative Direction"
+        blurb="Creative direction translates strategy into design. Before choosing colors, typography, imagery, or logos, define the feeling you want people to experience. A clear creative direction ensures every visual decision reinforces the strategy instead of distracting from it."
+        note="Creative direction should express the strategy, not decorate it."
+      />
 
       {project.creative.length > 0 && (
         <div className="space-y-2 mb-7">
@@ -1350,11 +1486,11 @@ function CreativeDirectionStep({ project, setProject, onNext, onOpen, onResolveF
         <div className="rounded-xl p-6" style={{ background: T.paperRaised, border: `1px solid ${T.line}` }}>
           <div className="uppercase font-semibold mb-4" style={{ fontSize: "10.5px", letterSpacing: "0.1em", color: T.inkSoft }}>{cat.id}</div>
 
-          <label className="block font-medium mb-1.5" style={{ fontSize: "13px", color: T.inkSoft }}>Feeling — what should this help someone feel or understand?</label>
+          <label className="block font-medium mb-1.5" style={{ fontSize: "13px", color: T.inkSoft }}>Feeling</label>
           <textarea value={feel} onChange={(e) => setFeel(e.target.value)} rows={2} placeholder="e.g., trustworthy, unhurried, urgent"
             className="w-full rounded-md px-3.5 py-2.5 outline-none resize-none mb-4" style={{ fontSize: "15px", background: T.paper, border: `1px solid ${T.line}` }} />
 
-          <label className="block font-medium mb-1.5" style={{ fontSize: "13px", color: T.inkSoft }}>Approach — how does that translate visually?</label>
+          <label className="block font-medium mb-1.5" style={{ fontSize: "13px", color: T.inkSoft }}>Approach</label>
           <textarea value={approach} onChange={(e) => setApproach(e.target.value)} rows={2} placeholder={cat.hint}
             className="w-full rounded-md px-3.5 py-2.5 outline-none resize-none" style={{ fontSize: "15px", background: T.paper, border: `1px solid ${T.line}` }} />
 
@@ -1376,19 +1512,24 @@ function CreativeDirectionStep({ project, setProject, onNext, onOpen, onResolveF
 }
 
 /* ============================================================
-   EXECUTIVE SUMMARY
+   TELL THE STORY  (workbook label; exports as "Strategy Summary")
    ============================================================ */
-function ExecutiveSummaryStep({ project, setProject, onNext, onOpen, onResolveFlag }) {
+function TellTheStoryStep({ project, setProject, onNext, onOpen, onResolveFlag }) {
   return (
     <div>
       {project.flags?.summary && <FlagBanner onResolve={() => onResolveFlag("summary")} />}
-      <SectionHeader eyebrow="15" title="Executive Summary" sub="In one paragraph, tell the story of your strategy — from the problem you uncovered to the creative direction you've proposed." />
-      <p className="mb-6" style={{ fontSize: "13px", color: T.inkSoft }}>If a client could only read one paragraph of this document, this is the one.</p>
+      <SectionHeader
+        eyebrow="16"
+        title="Tell the Story"
+        blurb="Every strategy should tell one clear story. By now you've defined the communication problem, uncovered key insights, identified an opportunity, and built a strategic direction. The final step is connecting those ideas into a narrative someone else can quickly understand."
+        note="If you can't explain the strategy clearly, it probably isn't clear yet."
+      />
+      <div className="mb-1.5" style={{ fontSize: "16.5px", color: T.ink, fontFamily: "Instrument Serif", fontStyle: "italic" }}>What's the story of your strategy?</div>
       <textarea
         value={project.execSummary}
         onChange={(e) => setProject({ ...project, execSummary: e.target.value })}
         rows={8}
-        placeholder="Write the paragraph that ties the whole strategy together, in your own words."
+        placeholder="Write one clear paragraph that explains how your strategy developed and why it leads to the creative direction you've recommended."
         className="w-full rounded-md px-4 py-3 outline-none resize-none leading-relaxed"
         style={{ fontSize: "15px", background: T.paperRaised, border: `1px solid ${T.line}` }}
       />
@@ -1414,7 +1555,13 @@ function CritiquePrepStep({ project, setProject, onNext }) {
   if (!role) {
     return (
       <div>
-        <SectionHeader eyebrow="16" title="Critique Prep" sub="Choose a reviewer. Write your answers before you defend this in a real crit." />
+        <SectionHeader
+          eyebrow="17"
+          title="Critique Prep"
+          blurb="Great designers don't just present solutions. They explain their thinking. Every design decision should connect back to the strategy you've developed. Preparing for critique isn't about defending your work. It's about clearly communicating the reasoning behind your decisions."
+          note="Confidence comes from preparation."
+        />
+        <p className="mb-6" style={{ fontSize: "13px", color: T.inkSoft }}>Choose a reviewer and write your answers before you defend this in a real critique.</p>
         <div className="grid grid-cols-2 gap-3">
           {CRITIQUE_ROLES.map((r) => (
             <button key={r.id} onClick={() => setRole(r.id)} className="text-left rounded-xl p-4" style={{ background: T.paperRaised, border: `1px solid ${T.line}` }}>
@@ -1423,14 +1570,14 @@ function CritiquePrepStep({ project, setProject, onNext }) {
             </button>
           ))}
         </div>
-        <NextButton onClick={onNext}>Continue to Brand Strategy</NextButton>
+        <NextButton onClick={onNext}>Continue to Final Review</NextButton>
       </div>
     );
   }
 
   return (
     <div>
-      <SectionHeader eyebrow={`Reviewing as ${active.name}`} title="Answer as if defending this live." sub={`Probing ${active.focus}.`} />
+      <SectionHeader eyebrow={`Reviewing as ${active.name}`} title="Answer as if defending this live." blurb={`Probing ${active.focus}. Write short, direct answers, the way you'd say them out loud.`} />
       <div className="space-y-6">
         {active.questions.map((q, i) => (
           <div key={i}>
@@ -1440,8 +1587,52 @@ function CritiquePrepStep({ project, setProject, onNext }) {
           </div>
         ))}
       </div>
-      <button onClick={() => setRole(null)} className="mt-6" style={{ fontSize: "13px", color: T.inkSoft }}>← choose a different reviewer</button>
-      <div><NextButton onClick={onNext}>Continue to Brand Strategy</NextButton></div>
+      <button onClick={() => setRole(null)} className="mt-6" style={{ fontSize: "13px", color: T.inkSoft }}>Choose a different reviewer</button>
+      <div><NextButton onClick={onNext}>Continue to Final Review</NextButton></div>
+    </div>
+  );
+}
+
+/* ============================================================
+   FINAL REVIEW
+   ============================================================ */
+function FinalReviewStep({ project, setStep, onNext }) {
+  const rows = [
+    { id: "challenge", label: "Communication Problem", done: !!project.challenge.trim() },
+    { id: "research", label: "Research", done: project.research.length > 0 },
+    { id: "patterns", label: "Patterns", done: project.patterns.length > 0 },
+    { id: "keyInsight", label: "Key Insight", done: !!project.keyInsight.trim() },
+    { id: "audience", label: "Audience", done: !!project.audience.trim() },
+    { id: "opportunity", label: "Opportunity", done: project.opportunity.locked },
+    { id: "positioning", label: "Positioning", done: project.positioning.locked },
+    { id: "differentiators", label: "Differentiators", done: project.differentiators.length > 0 },
+    { id: "attributes", label: "Brand Attributes", done: project.attributes.length > 0 },
+    { id: "pillars", label: "Brand Pillars", done: project.pillars.length > 0 },
+    { id: "philosophy", label: "Brand Philosophy", done: project.philosophy.locked },
+    { id: "voice", label: "Voice & Tone", done: project.voice.locked },
+    { id: "persona", label: "Brand Persona", done: project.persona.locked },
+    { id: "creative", label: "Creative Direction", done: project.creative.length > 0 },
+    { id: "summary", label: "Tell the Story", done: !!project.execSummary.trim() },
+  ];
+
+  return (
+    <div>
+      <SectionHeader
+        eyebrow="18"
+        title="Final Review"
+        blurb="Take one final look before you move forward. Everything you've written has led to this moment. Review each section carefully, make any final refinements, and make sure every decision supports the strategy you've developed."
+        note="Good design is easier when the strategy is clear."
+      />
+      <div className="space-y-2 mb-8">
+        {rows.map((r) => (
+          <button key={r.id} onClick={() => setStep(r.id)} className="w-full flex items-center justify-between rounded-lg px-4 py-3" style={{ background: T.paperRaised, border: `1px solid ${T.line}` }}>
+            <span style={{ fontSize: "14.5px", color: T.ink }}>{r.label}</span>
+            {r.done ? <Check size={16} style={{ color: T.marigold }} /> : <span className="italic" style={{ fontSize: "12.5px", color: T.inkSoft, fontFamily: "Instrument Serif" }}>not yet</span>}
+          </button>
+        ))}
+      </div>
+      <p className="mb-6" style={{ fontSize: "13.5px", color: T.inkSoft }}>When you're confident in your work, export your Brand Strategy and use it as the foundation for the rest of your design process.</p>
+      <NextButton onClick={onNext}>Continue to Brand Strategy</NextButton>
     </div>
   );
 }
@@ -1478,40 +1669,46 @@ function BrandStrategyStep({ project, onExportMarkdown, onExportPDF }) {
 
       <div className="mb-2" style={{ fontSize: "13px", color: T.inkSoft }}>{p.name}</div>
 
-      <Section n="01" title="Executive Summary">{p.execSummary || "—"}</Section>
-      <Section n="02" title="The Challenge">{p.challenge || "—"}</Section>
-      <Section n="03" title="Key Insight">{p.keyInsight || "—"}</Section>
-      <Section n="04" title="Audience">{p.audience || "—"}</Section>
-      <Section n="05" title="Opportunity">{p.opportunity.text || "—"}</Section>
-      <Section n="06" title="Positioning">
+      <Section n="01" title={exportLabel("summary")}>{p.execSummary || "Not yet written"}</Section>
+      <Section n="02" title="Communication Problem">{p.challenge || "Not yet defined"}</Section>
+      <Section n="03" title={exportLabel("research")}>
+        <ul className="space-y-1 list-disc pl-5">{p.research.map((r) => <li key={r.id}>{r.text}</li>)}</ul>
+      </Section>
+      <Section n="04" title={exportLabel("patterns")}>
+        <ul className="space-y-1 list-disc pl-5">{p.patterns.map((pt) => <li key={pt.id}>{pt.note}</li>)}</ul>
+      </Section>
+      <Section n="05" title="Key Insight">{p.keyInsight || "Not yet defined"}</Section>
+      <Section n="06" title="Audience">{p.audience || "Not yet defined"}</Section>
+      <Section n="07" title="Opportunity">{p.opportunity.text || "Not yet defined"}</Section>
+      <Section n="08" title={exportLabel("positioning")}>
         {p.positioning.locked
           ? <span className="italic" style={{ fontFamily: "Instrument Serif", fontSize: "19px" }}>For {p.positioning.audience}, unlike {p.positioning.market}, this brand {p.positioning.promise}, because {p.positioning.rtb}.</span>
-          : "—"}
+          : "Not yet defined"}
       </Section>
-      <Section n="07" title="Differentiators">
+      <Section n="09" title={exportLabel("differentiators")}>
         <ul className="space-y-1 list-disc pl-5">{p.differentiators.map((d) => <li key={d.id}>{d.text}</li>)}</ul>
       </Section>
-      <Section n="08" title="Brand Attributes">
+      <Section n="10" title="Brand Attributes">
         <ul className="space-y-1">{p.attributes.map((a) => <li key={a.id}><b>{a.this}</b>, not {a.not}</li>)}</ul>
       </Section>
-      <Section n="09" title="Brand Pillars">
-        <ul className="space-y-2">{p.pillars.map((pl) => <li key={pl.id}><b className="italic" style={{ fontFamily: "Instrument Serif" }}>{pl.name}</b> — {pl.link}</li>)}</ul>
+      <Section n="11" title="Brand Pillars">
+        <ul className="space-y-2">{p.pillars.map((pl) => <li key={pl.id}><b className="italic" style={{ fontFamily: "Instrument Serif" }}>{pl.name}</b>: {pl.link}</li>)}</ul>
       </Section>
-      <Section n="10" title="Brand Philosophy">
-        <p><b>What:</b> {p.philosophy.what || "—"}</p>
-        <p><b>How:</b> {p.philosophy.how || "—"}</p>
-        <p><b>Why:</b> {p.philosophy.why || "—"}</p>
+      <Section n="12" title="Brand Philosophy">
+        <p><b>What:</b> {p.philosophy.what || "Not yet defined"}</p>
+        <p><b>How:</b> {p.philosophy.how || "Not yet defined"}</p>
+        <p><b>Why:</b> {p.philosophy.why || "Not yet defined"}</p>
       </Section>
-      <Section n="11" title="Voice & Tone">
-        <p>{p.voice.style || "—"}</p>
+      <Section n="13" title="Voice & Tone">
+        <p>{p.voice.style || "Not yet defined"}</p>
         {p.voice.avoid && <p style={{ color: T.inkSoft }}>Never: {p.voice.avoid}</p>}
       </Section>
-      <Section n="12" title="Brand Persona">
-        <p>{p.persona.description || "—"}</p>
+      <Section n="14" title="Brand Persona">
+        <p>{p.persona.description || "Not yet defined"}</p>
         {p.persona.howDescribed && <p style={{ color: T.inkSoft }}>Others would describe them as: {p.persona.howDescribed}</p>}
         {p.persona.notThis && <p style={{ color: T.inkSoft }}>Would never: {p.persona.notThis}</p>}
       </Section>
-      <Section n="13" title="Creative Direction">
+      <Section n="15" title="Creative Direction">
         <ul className="space-y-2">{p.creative.filter((c) => !c.skipped).map((c) => <li key={c.id}><b>{c.category}:</b> {c.approach}</li>)}</ul>
       </Section>
     </div>
