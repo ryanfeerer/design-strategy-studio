@@ -1,70 +1,41 @@
-# Design Strategy Studio
+# Brand Strategy Builder
 
-A standalone Vite + React project, deployed as a static site with one small Vercel Serverless Function for AI coaching.
+A standalone, fully static Vite + React app. No AI, no API keys, no backend, no ongoing costs — the value is entirely in the structure, the questions, and the sequence.
 
-## Why there's a `/api` folder at all
-
-Anthropic's API can't be called directly from a browser (no CORS support for browser origins), and an API key should never live in client-side code anyway. Something has to sit between the browser and Anthropic, holding the key. `api/coach.js` is that thing — a single Vercel Serverless Function. Vercel automatically turns any file in `/api` into a live endpoint at deploy time; there's no server to run or manage yourself.
-
-## Local development
+## Run it locally
 
 ```bash
 npm install
-cp .env.example .env
-```
-
-Add your Anthropic API key to `.env` (get one at https://console.anthropic.com/settings/keys):
-
-```
-ANTHROPIC_API_KEY=sk-ant-your-key-here
-```
-
-Then run:
-
-```bash
 npm run dev
 ```
 
-This runs `vercel dev`, not `vite dev` directly — that matters. `vercel dev` runs your Vite frontend **and** the `/api/coach.js` function together, locally, exactly matching how they'll run in production. (First run may ask you to log in / link the project to Vercel — that's normal and only needed once.)
-
-## Deploying
+## Deploy it
 
 ```bash
-vercel deploy
+npm run build
 ```
 
-or connect the repo in the Vercel dashboard for automatic deploys on push — either way, Vercel builds the static frontend and deploys `api/coach.js` as a function automatically, no extra configuration needed.
+Deploy the `dist/` folder anywhere that serves static files — Vercel, Netlify, GitHub Pages, an S3 bucket, a plain file server. There is nothing else to configure. No environment variables, no server process, no API key.
 
-**Before your first deploy, set the API key in Vercel itself** — `.env` is git-ignored and never gets deployed:
+## What's in it
 
-```bash
-vercel env add ANTHROPIC_API_KEY
-```
+Students walk in with a client brief and walk out with a complete Brand Strategy document: Executive Summary, The Challenge, Key Insight, Audience, Opportunity, Positioning, Differentiators, Attributes, Pillars, Philosophy, Voice & Tone, Persona, and Creative Direction. Research and Patterns are supporting work along the way — they inform the strategy but aren't part of the final document.
 
-or add it in the dashboard under Project Settings → Environment Variables. Do this for both Production and Preview environments if you want coaching to work on preview deploys too.
-
-## If coaching ever stops working again
-
-- **Check the function's logs** in the Vercel dashboard (Deployments → your deployment → Functions → `api/coach`). `coach.js` logs a clear error if `ANTHROPIC_API_KEY` is missing, rather than failing silently.
-- **Rate limits:** the app automatically retries once on a 429 or 5xx response before giving up, so one busy moment shouldn't dead-end a student — but sustained 429s under real classroom load mean your Anthropic account needs a higher rate limit, not a code fix.
-- If you ever see the old "coaching is temporarily unavailable" message coming back after a deploy, the first thing to check is whether `api/coach.js` is still present and whether the environment variable is still set on that specific Vercel environment (Production vs. Preview vars are separate).
+Critique Prep gives students pre-written questions from seven professional perspectives (Creative Director, Client, Professor, and others) to rehearse defending their strategy before a real classroom critique.
 
 ## Project structure
 
 ```
 ├── index.html
-├── api/
-│   └── coach.js         the only server-side code — proxies coaching requests to Anthropic
-├── vite.config.js        plain Vite config, no proxy (see "why" above)
+├── vite.config.js
 ├── tailwind.config.js
 ├── postcss.config.js
-├── .env.example           copy to .env for local dev; set the real value in Vercel for production
 └── src/
-    ├── main.jsx           React entry point
-    ├── index.css          Tailwind directives
-    └── App.jsx             the entire application
+    ├── main.jsx
+    ├── index.css
+    └── App.jsx        the entire application
 ```
 
-## Local save/load and exports
+## Save/load and export
 
-These don't touch the server at all — project save/load is a JSON file download/upload, and exports are Markdown downloads and browser print-to-PDF. Only live AI coaching needs `api/coach.js` and the API key.
+Project save/load is a JSON file download/upload. The finished Brand Strategy exports as Markdown or as a PDF (via the browser's print dialog). All local, no server involved.
